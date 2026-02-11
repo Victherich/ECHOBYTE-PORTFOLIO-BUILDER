@@ -9,12 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "firebase": "^12.6.0",
     "next": "16.0.5",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "react-icons": "^5.5.0",
+    "styled-components": "^6.1.19",
+    "sweetalert2": "^11.26.3"
   },
   "devDependencies": {
     "babel-plugin-react-compiler": "1.0.0",
+    "babel-plugin-styled-components": "^2.1.4",
     "eslint": "^9",
     "eslint-config-next": "16.0.5"
   }
