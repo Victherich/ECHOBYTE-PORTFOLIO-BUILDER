@@ -750,8 +750,8 @@ export default function SkillsPage() {
               disabled={saving}
               onChange={(e)=>setSkillName(e.target.value)}
             />
-
-            <Label>Skill Level</Label>
+<br/><br/>
+            <Label>Skill Level (Eg. Beginner, intermediate, Expert or Other...)</Label>
             <Input
               value={skillLevel}
               disabled={saving}

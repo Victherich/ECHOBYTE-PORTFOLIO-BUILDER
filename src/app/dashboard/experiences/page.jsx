@@ -160,7 +160,7 @@ export default function ExperiencePage() {
   const [deletingId,setDeletingId]=useState(null);
 
   const [blocks,setBlocks]=useState([
-    { jobTitle:"", company:"", duration:"", responsibilities:"", skills:"" },
+    { jobTitle:"", company:"",location:"", duration:"", responsibilities:"", skills:"" },
   ]);
 
   const profilesRef = collection(db,"profiles");
@@ -230,16 +230,28 @@ export default function ExperiencePage() {
 
     setEditingId(null);
     setBlocks([
-      { jobTitle:"", company:"", duration:"", responsibilities:"", skills:"" },
+      { jobTitle:"", company:"",location:"", duration:"", responsibilities:"", skills:"" },
     ]);
     setModal(true);
   };
 
-  const openEdit=(item)=>{
-    setEditingId(item.id);
-    setBlocks(item.experiences || []);
-    setModal(true);
-  };
+  const openEdit = (item) => {
+  setEditingId(item.id);
+
+  const normalized =
+    (item.experiences || []).map((exp) => ({
+      jobTitle: exp.jobTitle || "",
+      company: exp.company || "",
+      location: exp.location || "",
+      duration: exp.duration || "",
+      responsibilities: exp.responsibilities || "",
+      skills: exp.skills || "",
+    }));
+
+  setBlocks(normalized);
+
+  setModal(true);
+};
 
   /* ---------- FORM ---------- */
 
@@ -391,6 +403,10 @@ export default function ExperiencePage() {
                 <Label>Company</Label>
                 <Input value={b.company}
                   onChange={(e)=>updateBlock(i,"company",e.target.value)} />
+
+                   <Label>Location</Label>
+                <Input value={b.location}
+                  onChange={(e)=>updateBlock(i,"location",e.target.value)} />
 
                 <Label>Duration</Label>
                 <Input value={b.duration}
