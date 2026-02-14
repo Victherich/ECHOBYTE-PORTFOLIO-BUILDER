@@ -13,6 +13,7 @@ import {
   doc,
   query,
   where,
+  serverTimestamp
 } from "firebase/firestore";
 
 /* ========================================================
@@ -44,9 +45,10 @@ const Container = styled.div`
 const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   flex-wrap: wrap;
+  flex-direction:column;
 `;
 
 const Title = styled.h1`
@@ -80,6 +82,7 @@ const Select = styled.select`
   padding: 12px;
   border-radius: 10px;
   border: 1px solid #c5d9f6;
+  outline:none;
 `;
 
 const List = styled.div`
@@ -170,117 +173,94 @@ const ModalFooter = styled.div`
    PAGE
 ========================================================= */
 
-export default function Links() {
-  const user = auth.currentUser;
-
+/* ========================================================
+   PAGE
+========================================================= */
+export default function LinksPage() {
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState("");
   const [links, setLinks] = useState([]);
-
   const [modal, setModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ label: "", url: "" });
 
-  const [label, setLabel] = useState("");
-  const [url, setUrl] = useState("");
-
-  const profilesRef = user
-    ? collection(db, "users", user.uid, "profiles")
-    : null;
-
-  const linksRef = user
-    ? collection(db, "users", user.uid, "links")
-    : null;
+  const user = auth.currentUser;
+  const profilesRef = collection(db, "profiles");
+  const linksRef = collection(db, "links"); // flat structure
 
   /* ---------- LOAD PROFILES ---------- */
   useEffect(() => {
-    loadProfiles();
-  }, []);
+    if (user) loadProfiles(user.uid);
+  }, [user]);
 
-  async function loadProfiles() {
-    if (!profilesRef) return;
-    const snap = await getDocs(profilesRef);
+  const loadProfiles = async (uid) => {
+    setLoading(true);
+    const q = query(profilesRef, where("userId", "==", uid));
+    const snap = await getDocs(q);
     const arr = [];
     snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
     setProfiles(arr);
-  }
+    setLoading(false);
+  };
 
   /* ---------- LOAD LINKS BY PROFILE ---------- */
   useEffect(() => {
-    if (selectedProfile) {
-      loadLinks(selectedProfile);
-    } else {
-      setLinks([]);
-    }
+    if (selectedProfile) loadLinks(selectedProfile);
+    else setLinks([]);
   }, [selectedProfile]);
 
-  async function loadLinks(profileId) {
-    if (!linksRef) return;
-
-    const q = query(linksRef, where("profileId", "==", profileId));
+  const loadLinks = async (profileId) => {
+    if (!user) return;
+    setLoading(true);
+    const q = query(
+      linksRef,
+      where("profileId", "==", profileId),
+      where("userId", "==", user.uid)
+    );
     const snap = await getDocs(q);
-
     const arr = [];
     snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
     setLinks(arr);
-  }
+    setLoading(false);
+  };
 
   /* ---------- MODAL ---------- */
-
-  function openNew() {
-    if (!selectedProfile) {
-      return fireSwal(
-        "Select Profile",
-        "Please select a profile first.",
-        "info"
-      );
-    }
-
+  const openNew = () => {
+    if (!selectedProfile) return fireSwal("Select Profile", "Please select a profile first.", "info");
     setModal(true);
     setEditingId(null);
-    setLabel("");
-    setUrl("");
-  }
+    setForm({ label: "", url: "" });
+  };
 
-  function openEdit(item) {
+  const openEdit = (item) => {
     setModal(true);
     setEditingId(item.id);
-    setLabel(item.label);
-    setUrl(item.url);
-  }
+    setForm({ label: item.label, url: item.url });
+  };
 
   /* ---------- SAVE ---------- */
-
-  async function save() {
-    if (!label.trim() || !url.trim()) {
-      return fireSwal(
-        "Missing",
-        "Please enter both label and URL.",
-        "warning"
-      );
-    }
+  const save = async () => {
+    if (!form.label.trim() || !form.url.trim())
+      return fireSwal("Missing", "Please enter both label and URL.", "warning");
 
     setLoading(true);
 
     const data = {
+      ...form,
       profileId: selectedProfile,
-      label,
-      url,
-      updatedAt: Date.now(),
+      userId: user.uid,
+      updatedAt: serverTimestamp(),
     };
 
     try {
       if (editingId) {
-        await updateDoc(
-          doc(db, "users", user.uid, "links", editingId),
-          data
-        );
+        await updateDoc(doc(db, "links", editingId), data);
         fireSwal("Updated", "Link updated.", "success");
       } else {
-        await addDoc(linksRef, { ...data, createdAt: Date.now() });
+        await addDoc(linksRef, { ...data, createdAt: serverTimestamp() });
         fireSwal("Created", "Link added.", "success");
       }
-
       setModal(false);
       loadLinks(selectedProfile);
     } catch (err) {
@@ -288,107 +268,70 @@ export default function Links() {
     }
 
     setLoading(false);
-  }
+  };
 
   /* ---------- DELETE ---------- */
-
-  async function del(id) {
+  const del = async (id) => {
     const c = await Swal.fire({
       title: "Delete this link?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: DarkBlue,
     });
-
     if (!c.isConfirmed) return;
 
-    await deleteDoc(doc(db, "users", user.uid, "links", id));
+    await deleteDoc(doc(db, "links", id));
     fireSwal("Deleted", "Link removed.", "success");
     loadLinks(selectedProfile);
-  }
+  };
 
-  /* ========================================================
-     UI
-  ========================================================== */
-
+  /* ================= UI ================= */
   return (
     <Container>
       <HeaderRow>
         <Title>Links</Title>
-   </HeaderRow>
-        <Select
-          value={selectedProfile}
-          onChange={(e) => setSelectedProfile(e.target.value)}
-        >
+        <Select value={selectedProfile} onChange={(e) => setSelectedProfile(e.target.value)}>
           <option value="">Select Profile...</option>
           {profiles.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title}
-            </option>
+            <option key={p.id} value={p.id}>{p.title}</option>
           ))}
         </Select>
-   
+      </HeaderRow>
 
-      <PlusButton onClick={openNew} disabled={!selectedProfile}>
-        +
-      </PlusButton>
+      <PlusButton onClick={openNew} >+</PlusButton>
 
       <List>
-        {!selectedProfile && (
-          <p style={{ opacity: 0.6 }}>Please select a profile.</p>
+        {!selectedProfile && <p style={{ opacity: 0.6 }}>Please select a profile.</p>}
+        {loading && <p>Loading...</p>}
+         {!loading && links.length===0 && selectedProfile && (
+          <p>No Links created yet.</p>
         )}
 
         {links.map((item) => (
           <Item key={item.id}>
             <div>
               <strong>{item.label}</strong>
-              <p style={{ margin: "4px 0", color: "#444" }}>
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {item.url}
-                </a>
-              </p>
+              <p><a href={item.url} target="_blank" rel="noopener noreferrer">{item.url}</a></p>
             </div>
-
             <BtnRow>
               <Btn onClick={() => openEdit(item)}>Edit</Btn>
-              <Btn $delete onClick={() => del(item.id)}>
-                Delete
-              </Btn>
+              <Btn $delete onClick={() => del(item.id)}>Delete</Btn>
             </BtnRow>
           </Item>
         ))}
       </List>
 
       {modal && (
-        <ModalBackground onClick={() => setModal(false)}>
+        <ModalBackground onClick={() => !loading && setModal(false)}>
           <ModalCard onClick={(e) => e.stopPropagation()}>
             <h2>{editingId ? "Edit Link" : "New Link"}</h2>
-
             <Label>Label</Label>
-            <Input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder="GitHub, Portfolio, LinkedIn..."
-            />
-
+            <Input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
             <Label>URL</Label>
-            <Input
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://..."
-            />
-
+            <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} />
             <ModalFooter>
-              <Btn onClick={save} disabled={loading}>
-                {loading ? "Saving..." : editingId ? "Update" : "Create"}
-              </Btn>
-              <Btn $delete onClick={() => setModal(false)}>
-                Cancel
-              </Btn>
+              <Btn onClick={save} disabled={loading}>{loading ? "Saving..." : editingId ? "Update" : "Create"}</Btn>
+              <Btn $delete onClick={() => setModal(false)}>Cancel</Btn>
             </ModalFooter>
           </ModalCard>
         </ModalBackground>

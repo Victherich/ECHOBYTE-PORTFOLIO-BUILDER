@@ -1,4 +1,8 @@
 
+
+
+
+
 // "use client";
 
 // import { useEffect, useState } from "react";
@@ -14,21 +18,49 @@
 //   doc,
 //   query,
 //   where,
+//   serverTimestamp,
 // } from "firebase/firestore";
 
-// // Theme colors
+// /* ---------------- THEME ---------------- */
 // const DarkBlue = "#0056b3";
 // const White = "#FFFFFF";
 
+// /* ---------------- STYLES ---------------- */
 // const Container = styled.div`
-// //   padding: 2rem;
 //   color: ${DarkBlue};
 //   position: relative;
+// `;
+
+// const HeaderRow = styled.div`
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: flex-start;
+//   margin-top: 1rem;
+//   flex-direction: column;
+
+//   @media (max-width: 480px) {
+//     flex-direction: column;
+//     align-items: flex-start;
+//     gap: 10px;
+//   }
 // `;
 
 // const Title = styled.h1`
 //   font-size: 2rem;
 //   font-weight: 700;
+// `;
+
+// const ProfileSelect = styled.select`
+//   padding: 10px 14px;
+//   border-radius: 10px;
+//   border: 1px solid #c5d9f6;
+//   font-size: 1rem;
+//   cursor: pointer;
+//   outline: none;
+
+//   &:focus {
+//     border-color: ${DarkBlue};
+//   }
 // `;
 
 // const PlusButton = styled.button`
@@ -62,15 +94,18 @@
 //   border: 1px solid rgba(0, 86, 179, 0.15);
 //   display: flex;
 //   justify-content: space-between;
-//   align-items: center;
+//   align-items: flex-start;
 //   margin-bottom: 1rem;
 //   box-shadow: 0 4px 10px rgba(0, 86, 179, 0.1);
 
-//  @media(max-width:428px){
-//   flex-direction:column;
-//   gap:10px;
+//   @media (max-width: 428px) {
+//     flex-direction: column;
+//     gap: 10px;
 //   }
+// `;
 
+// const InfoContent = styled.div`
+//   flex: 1;
 // `;
 
 // const BtnRow = styled.div`
@@ -101,14 +136,10 @@
 //     `}
 // `;
 
-// /* --------------------- MODAL ---------------------- */
 // const ModalBackground = styled.div`
 //   position: fixed;
-//   top: 0;
-//   left: 0;
-//   width: 100vw;
-//   height: 100vh;
-//   background: rgba(0,0,0,0.45);
+//   inset: 0;
+//   background: rgba(0, 0, 0, 0.45);
 //   display: flex;
 //   justify-content: center;
 //   align-items: center;
@@ -117,12 +148,13 @@
 
 // const ModalCard = styled.div`
 //   width: 90%;
+//   max-width: 550px;
 //   background: ${White};
 //   padding: 2rem;
 //   border-radius: 14px;
-//   box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-//   height:90vh;
-//   overflow-y:scroll;
+//   height: 90vh;
+//   overflow-y: auto;
+//   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
 // `;
 
 // const Label = styled.label`
@@ -144,40 +176,20 @@
 //   }
 // `;
 
-// const Select = styled.select`
-//   width: 100%;
-//   padding: 12px;
-//   border-radius: 10px;
-//   border: 1px solid #c5d9f6;
-//   font-size: 1rem;
-//   margin-top: 6px;
-
-//   &:focus {
-//     border-color: ${DarkBlue};
-//   }
-// `;
-
 // const ModalFooter = styled.div`
 //   margin-top: 1.8rem;
 //   display: flex;
 //   justify-content: space-between;
 // `;
 
-// /* -------------------------------------------------- */
+// /* ---------------- COMPONENT ---------------- */
 
 // export default function PersonalInfoPage() {
-//   const user = auth.currentUser;
-
 //   const [profiles, setProfiles] = useState([]);
-//   const [usedProfiles, setUsedProfiles] = useState([]);
-
+//   const [selectedProfile, setSelectedProfile] = useState("");
 //   const [personalInfos, setPersonalInfos] = useState([]);
-
 //   const [modalOpen, setModalOpen] = useState(false);
 //   const [editingId, setEditingId] = useState(null);
-//   const [loading, setLoading]=useState(false);
-
-//   const [selectedProfile, setSelectedProfile] = useState("");
 
 //   const [personalInfo, setPersonalInfo] = useState({
 //     firstName: "",
@@ -195,45 +207,57 @@
 //     personalTraits: "",
 //   });
 
-//   const profilesRef = user
-//     ? collection(db, "users", user.uid, "profiles")
-//     : null;
+//   const profilesRef = collection(db, "profiles");
+//   const personalInfoRef = collection(db, "personalInfo");
 
-//   const personalInfoRef = user
-//     ? collection(db, "users", user.uid, "personalInfo")
-//     : null;
-
-//   /* ---------------- LOAD DATA ---------------- */
-
+//   /* ---------------- LOAD PROFILES ---------------- */
 //   const loadProfiles = async () => {
-//     if (!profilesRef) return;
+//     const user = auth.currentUser;
+//     if (!user) return;
+
+//     const q = query(profilesRef, where("userId", "==", user.uid));
+//     const snap = await getDocs(q);
 //     const arr = [];
-//     const docsSnap = await getDocs(profilesRef);
-//     docsSnap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+//     snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
 //     setProfiles(arr);
 //   };
 
-//   const loadPersonalInfos = async () => {
-//     if (!personalInfoRef) return;
-//     const arr = [];
-//     const docsSnap = await getDocs(personalInfoRef);
-//     docsSnap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
-//     setPersonalInfos(arr);
+//   useEffect(() => {
+//     const unsub = auth.onAuthStateChanged((user) => {
+//       if (user) loadProfiles();
+//     });
+//     return () => unsub();
+//   }, []);
 
-//     setUsedProfiles(arr.map((i) => i.profileId)); // Used profiles
+//   /* ---------------- LOAD PERSONAL INFO ---------------- */
+//   const loadPersonalInfos = async (profileId) => {
+//     const user = auth.currentUser;
+//     if (!user || !profileId) return;
+
+//     const q = query(
+//       personalInfoRef,
+//       where("profileId", "==", profileId),
+//       where("userId", "==", user.uid)
+//     );
+//     const snap = await getDocs(q);
+//     const arr = [];
+//     snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+//     setPersonalInfos(arr);
 //   };
 
 //   useEffect(() => {
-//     loadProfiles();
-//     loadPersonalInfos();
-//   }, []);
+//     if (selectedProfile) loadPersonalInfos(selectedProfile);
+//     else setPersonalInfos([]);
+//   }, [selectedProfile]);
 
-//   /* ---------------- CREATE / EDIT ---------------- */
-
+//   /* ---------------- MODAL ACTIONS ---------------- */
 //   const openNewModal = () => {
-//     setModalOpen(true);
+//     if (!selectedProfile)
+//       return Swal.fire("Select a profile first.");
+//     if (personalInfos.length > 0)
+//       return Swal.fire("Only one personal info per profile.");
+
 //     setEditingId(null);
-//     setSelectedProfile("");
 //     setPersonalInfo({
 //       firstName: "",
 //       middleName: "",
@@ -249,190 +273,150 @@
 //       hobbies: "",
 //       personalTraits: "",
 //     });
+//     setModalOpen(true);
 //   };
 
 //   const openEditModal = (item) => {
-//     setModalOpen(true);
 //     setEditingId(item.id);
-//     setSelectedProfile(item.profileId);
-//     setPersonalInfo({ ...item });
+//     setPersonalInfo(item);
+//     setModalOpen(true);
 //   };
 
-// const savePersonalInfo = async () => {
-//   if (!selectedProfile) {
-//     return Swal.fire("Missing", "Please select a profile.", "warning");
-//   }
+//   const savePersonalInfo = async () => {
+//     const user = auth.currentUser;
+//     if (!user || !selectedProfile)
+//       return Swal.fire("Select a profile first.");
 
-//   // Prevent selecting a used profile
-//   if (!editingId && usedProfiles.includes(selectedProfile)) {
-//     return Swal.fire("Profile Already Used", "Select a different profile.", "error");
-//   }
-
-//   setLoading(true);
-//   Swal.fire({
-//     title: "Saving...",
-//     text: "Please wait",
-//     allowOutsideClick: false,
-//     didOpen: () => {
-//       Swal.showLoading();
-//     },
-//   });
-
-//   try {
 //     const data = {
 //       ...personalInfo,
-//       profileId: selectedProfile,
-//       updatedAt: Date.now(),
+//       userId: user.uid,            // Important for rules
+//       profileId: selectedProfile,  // Important for querying
+//       updatedAt: serverTimestamp(),
 //     };
 
-//     if (editingId) {
-//       const ref = doc(db, "users", user.uid, "personalInfo", editingId);
-//       await updateDoc(ref, data);
-//       Swal.fire("Updated!", "Personal info updated.", "success");
-//     } else {
-//       await addDoc(personalInfoRef, { ...data, createdAt: Date.now() });
-//       Swal.fire("Created!", "Personal info added.", "success");
+//     try {
+//       if (editingId) {
+//         await updateDoc(doc(db, "personalInfo", editingId), data);
+//       } else {
+//         await addDoc(personalInfoRef, {
+//           ...data,
+//           createdAt: serverTimestamp(),
+//         });
+//       }
+
+//       Swal.fire("Saved!", "", "success");
+//       setModalOpen(false);
+//       loadPersonalInfos(selectedProfile);
+//     } catch (err) {
+//       Swal.fire("Error", err.message, "error");
 //     }
-
-//     setModalOpen(false);
-//     loadPersonalInfos();
-//   } catch (e) {
-//     console.error(e);
-//     Swal.fire("Error", "Something went wrong.", "error");
-//   }
-
-//   setLoading(false);
-// };
-
+//   };
 
 //   /* ---------------- DELETE ---------------- */
+//   const deleteInfo = async (id) => {
+//     const result = await Swal.fire({
+//       title: "Are you sure?",
+//       text: "This personal info will be permanently deleted.",
+//       icon: "warning",
+//       showCancelButton: true,
+//       confirmButtonColor: DarkBlue,
+//       cancelButtonColor: "#d33",
+//       confirmButtonText: "Yes, delete it!",
+//       cancelButtonText: "Cancel",
+//     });
 
-// const deleteItem = async (id) => {
-//   const confirm = await Swal.fire({
-//     title: "Delete Personal Info?",
-//     text: "This action is permanent.",
-//     icon: "warning",
-//     showCancelButton: true,
-//     confirmButtonText: "Delete",
-//   });
-
-//   if (!confirm.isConfirmed) return;
-
-//   setLoading(true);
-
-//   Swal.fire({
-//     title: "Deleting...",
-//     text: "Please wait",
-//     allowOutsideClick: false,
-//     didOpen: () => {
-//       Swal.showLoading();
-//     },
-//   });
-
-//   try {
-//     await deleteDoc(doc(db, "users", user.uid, "personalInfo", id));
-//     Swal.fire("Deleted!", "Personal info removed.", "success");
-//     loadPersonalInfos();
-//   } catch (e) {
-//     Swal.fire("Error", "Could not delete item.", "error");
-//   }
-
-//   setLoading(false);
-// };
-
-
-
-
-// const HIDDEN_FIELDS = [
-//   "id",
-//   "createdAt",
-//   "updatedAt",
-//   "profileId"
-// ];
-
-
+//     if (result.isConfirmed) {
+//       try {
+//         await deleteDoc(doc(db, "personalInfo", id));
+//         Swal.fire("Deleted!", "Personal info has been deleted.", "success");
+//         loadPersonalInfos(selectedProfile);
+//       } catch (err) {
+//         Swal.fire("Error", err.message, "error");
+//       }
+//     }
+//   };
 
 //   /* ---------------- RENDER ---------------- */
-
 //   return (
 //     <Container>
-//       <Title>Personal Information</Title>
+//       <HeaderRow>
+//         <Title>Personal Information</Title>
+//         <ProfileSelect
+//           value={selectedProfile}
+//           onChange={(e) => setSelectedProfile(e.target.value)}
+//         >
+//           <option value="">Select Profile...</option>
+//           {profiles.map((p) => (
+//             <option key={p.id} value={p.id}>
+//               {p.title}
+//             </option>
+//           ))}
+//         </ProfileSelect>
+//       </HeaderRow>
 
 //       <PlusButton onClick={openNewModal}>+</PlusButton>
 
 //       <List>
-//         <h2>Your Personal Info Entries</h2>
-// <br/>
-//         {personalInfos.length === 0 && (
-//           <p style={{ opacity: 0.7 }}>No personal info created yet.</p>
-//         )}
+//         {!selectedProfile && <p>Please select a profile.</p>}
 
 //         {personalInfos.map((item) => (
 //           <Item key={item.id}>
-//             <div>
-//               <strong>{item.firstName} {item.lastName}</strong>
-//               <p style={{ opacity: 0.6, margin: 0 }}>
-//                 Profile: {profiles.find((p) => p.id === item.profileId)?.title}
-//               </p>
-//               <p style={{ margin: 0, color:"#333" }}>
-//             Email: {item.email}
-//               </p>
-//               <p style={{ margin: 0 , color:"#333"}}>
-//             Phone: {item.phone}
-//               </p>
-//             </div>
+//             <InfoContent>
+//               <strong style={{ fontSize: "1.1rem" }}>
+//                 {item.firstName} {item.lastName}
+//               </strong>
+
+//               {Object.entries(item)
+//                 .filter(
+//                   ([key]) =>
+//                     !["id", "userId", "profileId", "createdAt", "updatedAt"].includes(
+//                       key
+//                     )
+//                 )
+//                 .map(([key, value]) => (
+//                   <p
+//                     key={key}
+//                     style={{ margin: "4px 0", color: "#333", fontSize: "0.95rem" }}
+//                   >
+//                     <strong style={{ opacity: 0.7 }}>
+//                       {key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}:
+//                     </strong>{" "}
+//                     {value || "-"}
+//                   </p>
+//                 ))}
+//             </InfoContent>
 
 //             <BtnRow>
-//               <Btn $small onClick={() => openEditModal(item)}>Edit</Btn>
-//               <Btn $small $delete onClick={() => deleteItem(item.id)}>Delete</Btn>
+//               <Btn onClick={() => openEditModal(item)}>Edit</Btn>
+//               <Btn $delete onClick={() => deleteInfo(item.id)}>Delete</Btn>
 //             </BtnRow>
 //           </Item>
 //         ))}
 //       </List>
 
-//       {/* ------------ MODAL ------------- */}
 //       {modalOpen && (
 //         <ModalBackground>
 //           <ModalCard>
-//             <h2>{editingId ? "Edit Personal Info" : "Create New Personal Info"}</h2>
+//             <h2>{editingId ? "Edit" : "New"} Personal Info</h2>
 
-//             {/* SELECT PROFILE */}
-//             <Label>Select Profile</Label>
-//             <Select
-//               value={selectedProfile}
-//               onChange={(e) => setSelectedProfile(e.target.value)}
-//             >
-//               <option value="">Select Profile</option>
-
-//               {profiles.map((p) => (
-//                 <option
-//                   key={p.id}
-//                   value={p.id}
-//                   disabled={
-//                     !editingId && usedProfiles.includes(p.id)
-//                   }
-//                 >
-//                   {p.title}
-//                   {usedProfiles.includes(p.id) && " (Already Used)"}
-//                 </option>
+//             {Object.entries(personalInfo)
+//               .filter(
+//                 ([key]) =>
+//                   !["id", "userId", "profileId", "createdAt", "updatedAt"].includes(
+//                     key
+//                   )
+//               )
+//               .map(([key, value]) => (
+//                 <div key={key}>
+//                   <Label>{key.replace(/([A-Z])/g, " $1")}</Label>
+//                   <Input
+//                     value={value}
+//                     onChange={(e) =>
+//                       setPersonalInfo({ ...personalInfo, [key]: e.target.value })
+//                     }
+//                   />
+//                 </div>
 //               ))}
-//             </Select>
-
-//             {/* PERSONAL INFO FIELDS */}
-//           {Object.entries(personalInfo)
-//   .filter(([key]) => !HIDDEN_FIELDS.includes(key))
-//   .map(([key, value]) => (
-//     <div key={key}>
-//       <Label>{key.replace(/([A-Z])/g, " $1")}</Label>
-//       <Input
-//         value={value}
-//         onChange={(e) =>
-//           setPersonalInfo({ ...personalInfo, [key]: e.target.value })
-//         }
-//       />
-//     </div>
-// ))}
-
 
 //             <ModalFooter>
 //               <Btn onClick={savePersonalInfo}>
@@ -446,7 +430,6 @@
 //     </Container>
 //   );
 // }
-
 
 
 "use client";
@@ -464,54 +447,39 @@ import {
   doc,
   query,
   where,
+  serverTimestamp,
 } from "firebase/firestore";
 
-/* ----------------------------------------------------
-   THEME
----------------------------------------------------- */
+/* -------------------- THEME -------------------- */
 const DarkBlue = "#0056b3";
 const White = "#FFFFFF";
 
-/* ----------------------------------------------------
-   STYLES
----------------------------------------------------- */
-const Container = styled.div`
-  color: ${DarkBlue};
-  position: relative;
-`;
-
+/* -------------------- STYLES -------------------- */
+const Container = styled.div`color: ${DarkBlue}; position: relative;`;
 const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-top: 1rem;
- flex-direction: column;
-
+  flex-direction: column;
   @media (max-width: 480px) {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
 `;
-
-const Title = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-`;
-
+const Title = styled.h1`font-size: 2rem; font-weight: 700;`;
 const ProfileSelect = styled.select`
   padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid #c5d9f6;
   font-size: 1rem;
   cursor: pointer;
-  outline:none;
-
+  outline: none;
   &:focus {
     border-color: ${DarkBlue};
   }
 `;
-
 const PlusButton = styled.button`
   position: fixed;
   top: 120px;
@@ -526,16 +494,11 @@ const PlusButton = styled.button`
   box-shadow: 0 6px 15px rgba(0, 86, 179, 0.3);
   cursor: pointer;
   transition: 0.3s;
-
   &:hover {
     background: #00448a;
   }
 `;
-
-const List = styled.div`
-  margin-top: 2.5rem;
-`;
-
+const List = styled.div`margin-top: 2.5rem;`;
 const Item = styled.div`
   background: ${White};
   padding: 1rem;
@@ -546,18 +509,13 @@ const Item = styled.div`
   align-items: flex-start;
   margin-bottom: 1rem;
   box-shadow: 0 4px 10px rgba(0, 86, 179, 0.1);
-
   @media (max-width: 428px) {
     flex-direction: column;
     gap: 10px;
   }
 `;
-
-const BtnRow = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
-
+const InfoContent = styled.div``;
+const BtnRow = styled.div`display: flex; gap: 1rem;`;
 const Btn = styled.button`
   padding: 8px 15px;
   background: ${DarkBlue};
@@ -572,7 +530,6 @@ const Btn = styled.button`
     `
       background: #d9534f;
     `}
-
   ${(props) =>
     props.$small &&
     `
@@ -580,7 +537,6 @@ const Btn = styled.button`
       font-size: 0.85rem;
     `}
 `;
-
 const ModalBackground = styled.div`
   position: fixed;
   inset: 0;
@@ -590,7 +546,6 @@ const ModalBackground = styled.div`
   align-items: center;
   z-index: 200;
 `;
-
 const ModalCard = styled.div`
   width: 90%;
   max-width: 550px;
@@ -601,13 +556,11 @@ const ModalCard = styled.div`
   overflow-y: auto;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
 `;
-
 const Label = styled.label`
   font-weight: 600;
   margin-top: 1rem;
   display: block;
 `;
-
 const Input = styled.input`
   width: 100%;
   padding: 12px;
@@ -615,31 +568,29 @@ const Input = styled.input`
   border: 1px solid #c5d9f6;
   font-size: 1rem;
   margin-top: 6px;
-
   &:focus {
     border-color: ${DarkBlue};
   }
 `;
-
 const ModalFooter = styled.div`
   margin-top: 1.8rem;
   display: flex;
   justify-content: space-between;
 `;
 
-/* ----------------------------------------------------
-   COMPONENT
----------------------------------------------------- */
-
+/* -------------------- COMPONENT -------------------- */
 export default function PersonalInfoPage() {
   const user = auth.currentUser;
 
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState("");
   const [personalInfos, setPersonalInfos] = useState([]);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+  const [loadingInfos, setLoadingInfos] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const [personalInfo, setPersonalInfo] = useState({
     firstName: "",
@@ -657,55 +608,78 @@ export default function PersonalInfoPage() {
     personalTraits: "",
   });
 
-  const profilesRef = user ? collection(db, "users", user.uid, "profiles") : null;
-  const personalInfoRef = user ? collection(db, "users", user.uid, "personalInfo") : null;
+  const profilesRef = collection(db, "profiles");
+  const personalInfoRef = collection(db, "personalInfo");
 
   /* ---------------- LOAD PROFILES ---------------- */
   const loadProfiles = async () => {
-    if (!profilesRef) return;
-    const snap = await getDocs(profilesRef);
-    const arr = [];
-    snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
-    setProfiles(arr);
+    if (!user) return;
+    setLoadingProfiles(true);
+    try {
+      const q = query(profilesRef, where("userId", "==", user.uid));
+      const snap = await getDocs(q);
+      const arr = [];
+      snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+      setProfiles(arr);
+
+      if (arr.length === 0) {
+        Swal.fire({
+          icon: "info",
+          title: "No Profiles Found",
+          text: "Please create a profile first before adding personal info.",
+        });
+      }
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    } finally {
+      setLoadingProfiles(false);
+    }
   };
 
   useEffect(() => {
-    loadProfiles();
+    const unsub = auth.onAuthStateChanged((u) => {
+      if (u) loadProfiles();
+    });
+    return () => unsub();
   }, []);
 
   /* ---------------- LOAD PERSONAL INFO ---------------- */
   const loadPersonalInfos = async (profileId) => {
-    if (!personalInfoRef || !profileId) return;
-    const q = query(personalInfoRef, where("profileId", "==", profileId));
-    const docsSnap = await getDocs(q);
-
-    const arr = [];
-    docsSnap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
-    setPersonalInfos(arr);
+    if (!user || !profileId) return;
+    setLoadingInfos(true);
+    try {
+      const q = query(
+        personalInfoRef,
+        where("profileId", "==", profileId),
+        where("userId", "==", user.uid)
+      );
+      const snap = await getDocs(q);
+      const arr = [];
+      snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+      setPersonalInfos(arr);
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    } finally {
+      setLoadingInfos(false);
+    }
   };
 
-  /* Load when profile changes */
   useEffect(() => {
     if (selectedProfile) loadPersonalInfos(selectedProfile);
+    else setPersonalInfos([]);
   }, [selectedProfile]);
 
-  /* ---------------- NEW + EDIT MODAL ---------------- */
+  /* ---------------- MODAL ---------------- */
   const openNewModal = () => {
-    if (!selectedProfile)
-      return Swal.fire("Select a profile first.");
+    if (!selectedProfile) return Swal.fire("Select a profile first.");
+    if (personalInfos.length > 0)
+      return Swal.fire(
+        "Already Exists",
+        "You can only create one personal info per profile. Edit the existing one.",
+        "info"
+      );
 
-     // 🚫 Block if personal info already exists for this profile
-  if (personalInfos.length > 0) {
-    return Swal.fire({
-      icon: "info",
-      title: "Personal Info Exists",
-      text: "You can only create one personal info per profile. Please edit the existing one.",
-    });
-  }
-
-    setModalOpen(true);
     setEditingId(null);
-
     setPersonalInfo({
       firstName: "",
       middleName: "",
@@ -721,86 +695,78 @@ export default function PersonalInfoPage() {
       hobbies: "",
       personalTraits: "",
     });
+    setModalOpen(true);
   };
 
   const openEditModal = (item) => {
-    setModalOpen(true);
     setEditingId(item.id);
     setPersonalInfo(item);
+    setModalOpen(true);
   };
 
   const savePersonalInfo = async () => {
-    if (!selectedProfile) return Swal.fire("Select a profile first.");
-
-    Swal.fire({
-      title: "Saving...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
+    if (!user || !selectedProfile) return Swal.fire("Select a profile first.");
+    setSaving(true);
     const data = {
       ...personalInfo,
+      userId: user.uid,
       profileId: selectedProfile,
-      updatedAt: Date.now(),
+      updatedAt: serverTimestamp(),
     };
 
     try {
       if (editingId) {
-        await updateDoc(
-          doc(db, "users", user.uid, "personalInfo", editingId),
-          data
-        );
+        await updateDoc(doc(db, "personalInfo", editingId), data);
       } else {
-        await addDoc(personalInfoRef, {
-          ...data,
-          createdAt: Date.now(),
-        });
+        await addDoc(personalInfoRef, { ...data, createdAt: serverTimestamp() });
       }
-
-      Swal.fire("Saved!", "Personal info saved.", "success");
+      Swal.fire("Saved!", "", "success");
       setModalOpen(false);
       loadPersonalInfos(selectedProfile);
     } catch (err) {
       Swal.fire("Error", err.message, "error");
+    } finally {
+      setSaving(false);
     }
   };
 
   /* ---------------- DELETE ---------------- */
   const deleteInfo = async (id) => {
-    const confirm = await Swal.fire({
-      title: "Delete this personal info?",
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This personal info will be permanently deleted.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Delete",
+      confirmButtonColor: DarkBlue,
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
 
-    if (!confirm.isConfirmed) return;
-
-    await deleteDoc(doc(db, "users", user.uid, "personalInfo", id));
-    Swal.fire("Deleted!", "", "success");
-    loadPersonalInfos(selectedProfile);
+    if (result.isConfirmed) {
+      setDeletingId(id);
+      try {
+        await deleteDoc(doc(db, "personalInfo", id));
+        Swal.fire("Deleted!", "Personal info has been deleted.", "success");
+        loadPersonalInfos(selectedProfile);
+      } catch (err) {
+        Swal.fire("Error", err.message, "error");
+      } finally {
+        setDeletingId(null);
+      }
+    }
   };
 
-  /* ----------------------------------------------------
-     RENDER
-  ---------------------------------------------------- */
-
-  useEffect(()=>{
-    if(!selectedProfile){
-        setPersonalInfos([])
-    }
-  },[selectedProfile, setPersonalInfos])
-
+  /* ---------------- RENDER ---------------- */
   return (
     <Container>
-
-      {/* ---------- TOP HEADER WITH PROFILE SELECTOR ---------- */}
       <HeaderRow>
         <Title>Personal Information</Title>
 
         <ProfileSelect
           value={selectedProfile}
           onChange={(e) => setSelectedProfile(e.target.value)}
+          disabled={loadingProfiles || profiles.length === 0}
         >
           <option value="">Select Profile...</option>
           {profiles.map((p) => (
@@ -811,62 +777,69 @@ export default function PersonalInfoPage() {
         </ProfileSelect>
       </HeaderRow>
 
-      <PlusButton onClick={openNewModal}>+</PlusButton>
+      <PlusButton onClick={openNewModal} disabled={loadingProfiles || profiles.length === 0}>
+        +
+      </PlusButton>
 
       <List>
-        {!selectedProfile && (
-          <p style={{ opacity: 0.6 }}>Please select a profile.</p>
+        {loadingInfos && <p>Loading personal info...</p>}
+        {!loadingInfos && !selectedProfile && <p>Please select a profile.</p>}
+        {!loadingInfos && selectedProfile && personalInfos.length === 0 && (
+          <p>No personal info created yet for this profile.</p>
         )}
 
-    
+        {personalInfos.map((item) => (
+          <Item key={item.id}>
+            <InfoContent>
+              <strong style={{ fontSize: "1.1rem" }}>
+                {item.firstName} {item.lastName}
+              </strong>
 
-{personalInfos.map((item) => {
-  const HIDDEN_VIEW_FIELDS = ["id", "profileId", "createdAt", "updatedAt"];
+              {Object.entries(item)
+                .filter(
+                  ([key]) =>
+                    !["id", "userId", "profileId", "createdAt", "updatedAt"].includes(key)
+                )
+                .map(([key, value]) => (
+                  <p
+                    key={key}
+                    style={{ margin: "4px 0", color: "#333", fontSize: "0.95rem" }}
+                  >
+                    <strong style={{ opacity: 0.7 }}>
+                      {key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}:
+                    </strong>{" "}
+                    {value || "-"}
+                  </p>
+                ))}
+            </InfoContent>
 
-  return (
-    <Item key={item.id}>
-      <div>
-        <strong style={{ fontSize: "1.1rem" }}>
-          {item.firstName} {item.lastName}
-        </strong>
-
-        {Object.entries(item)
-          .filter(([key]) => !HIDDEN_VIEW_FIELDS.includes(key))
-          .map(([key, value]) => (
-            <p
-              key={key}
-              style={{
-                margin: "4px 0",
-                color: "#333",
-                fontSize: "0.95rem",
-              }}
-            >
-              <strong style={{ opacity: 0.7 }}>
-                {key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase())}:
-              </strong>{" "}
-              {value}
-            </p>
+            <BtnRow>
+              <Btn $small onClick={() => openEditModal(item)} disabled={saving || deletingId}>
+                {saving && editingId === item.id ? "Saving..." : "Edit"}
+              </Btn>
+              <Btn
+                $delete
+                $small
+                onClick={() => deleteInfo(item.id)}
+                disabled={saving || deletingId === item.id}
+              >
+                {deletingId === item.id ? "Deleting..." : "Delete"}
+              </Btn>
+            </BtnRow>
+          </Item>
         ))}
-      </div>
-
-      <BtnRow>
-        <Btn $small onClick={() => openEditModal(item)}>Edit</Btn>
-        <Btn $small $delete onClick={() => deleteInfo(item.id)}>Delete</Btn>
-      </BtnRow>
-    </Item>
-  );
-})}
       </List>
 
-      {/* ---------- ADD / EDIT MODAL ---------- */}
       {modalOpen && (
         <ModalBackground>
           <ModalCard>
             <h2>{editingId ? "Edit" : "New"} Personal Info</h2>
 
-            {/* PERSONAL INFO FIELDS */}
             {Object.entries(personalInfo)
-              .filter(([key]) => !["id", "updatedAt", "createdAt", "profileId"].includes(key))
+              .filter(
+                ([key]) =>
+                  !["id", "userId", "profileId", "createdAt", "updatedAt"].includes(key)
+              )
               .map(([key, value]) => (
                 <div key={key}>
                   <Label>{key.replace(/([A-Z])/g, " $1")}</Label>
@@ -875,15 +848,18 @@ export default function PersonalInfoPage() {
                     onChange={(e) =>
                       setPersonalInfo({ ...personalInfo, [key]: e.target.value })
                     }
+                    disabled={saving}
                   />
                 </div>
               ))}
 
             <ModalFooter>
-              <Btn onClick={savePersonalInfo}>
-                {editingId ? "Update" : "Create"}
+              <Btn onClick={savePersonalInfo} disabled={saving}>
+                {saving ? (editingId ? "Updating..." : "Creating...") : editingId ? "Update" : "Create"}
               </Btn>
-              <Btn $delete onClick={() => setModalOpen(false)}>Cancel</Btn>
+              <Btn $delete onClick={() => setModalOpen(false)} disabled={saving}>
+                Cancel
+              </Btn>
             </ModalFooter>
           </ModalCard>
         </ModalBackground>

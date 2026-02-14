@@ -14,6 +14,7 @@ import {
   doc,
   query,
   where,
+  serverTimestamp
 } from "firebase/firestore";
 
 /* ========================================================
@@ -46,9 +47,10 @@ const Container = styled.div`
 const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   flex-wrap: wrap;
+  flex-direction:column;
 `;
 
 const Title = styled.h1`
@@ -82,6 +84,7 @@ const Select = styled.select`
   padding: 12px;
   border-radius: 10px;
   border: 1px solid #c5d9f6;
+  outline:none;
 `;
 
 const List = styled.div`
@@ -170,120 +173,95 @@ const ModalFooter = styled.div`
 /* ========================================================
    PAGE
 ========================================================= */
-
 export default function SummaryPage() {
-  const user = auth.currentUser;
-
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState("");
   const [summaries, setSummaries] = useState([]);
-
   const [modal, setModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [summaryText, setSummaryText] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [summary, setSummary] = useState("");
-
-  const profilesRef = user
-    ? collection(db, "users", user.uid, "profiles")
-    : null;
-
-  const summaryRef = user
-    ? collection(db, "users", user.uid, "summary")
-    : null;
+  const user = auth.currentUser;
+  const profilesRef = collection(db, "profiles");
+  const summaryRef = collection(db, "summaries"); // flat structure
 
   /* ---------- LOAD PROFILES ---------- */
   useEffect(() => {
-    loadProfiles();
-  }, []);
+    if (user) loadProfiles(user.uid);
+  }, [user]);
 
-  async function loadProfiles() {
-    if (!profilesRef) return;
-    const snap = await getDocs(profilesRef);
+  const loadProfiles = async (uid) => {
+    setLoading(true);
+    const q = query(profilesRef, where("userId", "==", uid));
+    const snap = await getDocs(q);
     const arr = [];
     snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
     setProfiles(arr);
-  }
+    setLoading(false);
+  };
 
   /* ---------- LOAD SUMMARY BY PROFILE ---------- */
   useEffect(() => {
-    if (selectedProfile) {
-      loadSummary(selectedProfile);
-    } else {
-      setSummaries([]);
-    }
+    if (selectedProfile) loadSummary(selectedProfile);
+    else setSummaries([]);
   }, [selectedProfile]);
 
-  async function loadSummary(profileId) {
-    if (!summaryRef) return;
-
-    const q = query(summaryRef, where("profileId", "==", profileId));
+  const loadSummary = async (profileId) => {
+    if (!user) return;
+    setLoading(true);
+    const q = query(
+      summaryRef,
+      where("profileId", "==", profileId),
+      where("userId", "==", user.uid)
+    );
     const snap = await getDocs(q);
-
     const arr = [];
     snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
     setSummaries(arr);
-  }
+    setLoading(false);
+  };
 
   /* ---------- MODAL ---------- */
+  const openNew = () => {
+    if (!selectedProfile)
+      return fireSwal("Select Profile", "Please select a profile first.", "info");
 
-  function openNew() {
-    if (!selectedProfile) {
-      return fireSwal(
-        "Select Profile",
-        "Please select a profile first.",
-        "info"
-      );
-    }
-
-    if (summaries.length > 0) {
-      return fireSwal(
-        "Summary Exists",
-        "You can only create one summary per profile.",
-        "info"
-      );
-    }
+    if (summaries.length > 0)
+      return fireSwal("Summary Exists", "Only one summary per profile.", "info");
 
     setModal(true);
     setEditingId(null);
-    setSummary("");
-  }
+    setSummaryText("");
+  };
 
-  function openEdit(item) {
+  const openEdit = (item) => {
     setModal(true);
     setEditingId(item.id);
-    setSummary(item.summary);
-  }
+    setSummaryText(item.summary);
+  };
 
   /* ---------- SAVE ---------- */
+  const save = async () => {
+    if (!summaryText.trim()) return fireSwal("Missing", "Summary cannot be empty.", "warning");
+    if (summaryText.length > MAX_CHARS)
+      return fireSwal("Too Long", `Maximum allowed characters is ${MAX_CHARS}.`, "warning");
 
-  async function save() {
-    if (!summary.trim()) {
-      return fireSwal("Missing", "Summary cannot be empty.", "warning");
-    }
-
-    if (summary.length > MAX_CHARS) {
-      return fireSwal(
-        "Too Long",
-        `Maximum allowed characters is ${MAX_CHARS}.`,
-        "warning"
-      );
-    }
+    setLoading(true);
 
     const data = {
       profileId: selectedProfile,
-      summary,
-      updatedAt: Date.now(),
+      summary: summaryText,
+      userId: user.uid,
+      updatedAt: serverTimestamp(),
     };
 
     try {
       if (editingId) {
-        await updateDoc(
-          doc(db, "users", user.uid, "summary", editingId),
-          data
-        );
+        await updateDoc(doc(db, "summaries", editingId), data);
         fireSwal("Updated", "Summary updated.", "success");
       } else {
-        await addDoc(summaryRef, { ...data, createdAt: Date.now() });
+        await addDoc(summaryRef, { ...data, createdAt: serverTimestamp() });
         fireSwal("Created", "Summary saved.", "success");
       }
 
@@ -292,11 +270,12 @@ export default function SummaryPage() {
     } catch (err) {
       fireSwal("Error", err.message, "error");
     }
-  }
+
+    setLoading(false);
+  };
 
   /* ---------- DELETE ---------- */
-
-  async function del(id) {
+  const del = async (id) => {
     const c = await Swal.fire({
       title: "Delete summary?",
       icon: "warning",
@@ -306,82 +285,61 @@ export default function SummaryPage() {
 
     if (!c.isConfirmed) return;
 
-    await deleteDoc(doc(db, "users", user.uid, "summary", id));
+    await deleteDoc(doc(db, "summaries", id));
     fireSwal("Deleted", "Summary removed.", "success");
     loadSummary(selectedProfile);
-  }
+  };
 
-  /* ========================================================
-     UI
-  ========================================================== */
-
+  /* ================= UI ================= */
   return (
     <Container>
       <HeaderRow>
         <Title>Summary</Title>
- </HeaderRow>
-        <Select
-          value={selectedProfile}
-          onChange={(e) => setSelectedProfile(e.target.value)}
-        >
+        <Select value={selectedProfile} onChange={(e) => setSelectedProfile(e.target.value)}>
           <option value="">Select Profile...</option>
           {profiles.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title}
-            </option>
+            <option key={p.id} value={p.id}>{p.title}</option>
           ))}
         </Select>
-     
+      </HeaderRow>
 
-      <PlusButton onClick={openNew} disabled={!selectedProfile}>
-        +
-      </PlusButton>
+      <PlusButton onClick={openNew} >+</PlusButton>
 
       <List>
-        {!selectedProfile && (
-          <p style={{ opacity: 0.6 }}>Please select a profile.</p>
+        {!selectedProfile && <p style={{ opacity: 0.6 }}>Please select a profile.</p>}
+        {loading && <p>Loading...</p>}
+         {!loading && summaries.length===0 && selectedProfile && (
+          <p>No Summary created yet.</p>
         )}
 
         {summaries.map((item) => (
           <Item key={item.id}>
-            <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
-              {item.summary}
-            </p>
-
+            <p style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>{item.summary}</p>
             <BtnRow>
               <Btn onClick={() => openEdit(item)}>Edit</Btn>
-              <Btn $delete onClick={() => del(item.id)}>
-                Delete
-              </Btn>
+              <Btn $delete onClick={() => del(item.id)}>Delete</Btn>
             </BtnRow>
           </Item>
         ))}
       </List>
 
       {modal && (
-        <ModalBackground onClick={() => setModal(false)}>
+        <ModalBackground onClick={() => !loading && setModal(false)}>
           <ModalCard onClick={(e) => e.stopPropagation()}>
             <h2>{editingId ? "Edit Summary" : "New Summary"}</h2>
-
             <Label>Summary</Label>
             <TextArea
               rows={5}
-              value={summary}
+              value={summaryText}
               maxLength={MAX_CHARS}
-              onChange={(e) => setSummary(e.target.value)}
+              onChange={(e) => setSummaryText(e.target.value)}
             />
-
-            <Counter exceeded={summary.length > MAX_CHARS}>
-              {summary.length} / {MAX_CHARS}
-            </Counter>
-
+      <Counter exceeded={(summaryText.length > MAX_CHARS).toString()}>
+  {summaryText.length} / {MAX_CHARS}
+</Counter>
             <ModalFooter>
-              <Btn onClick={save}>
-                {editingId ? "Update" : "Create"}
-              </Btn>
-              <Btn $delete onClick={() => setModal(false)}>
-                Cancel
-              </Btn>
+              <Btn onClick={save}>{loading ? "Saving..." : editingId ? "Update" : "Create"}</Btn>
+              <Btn $delete onClick={() => setModal(false)}>Cancel</Btn>
             </ModalFooter>
           </ModalCard>
         </ModalBackground>

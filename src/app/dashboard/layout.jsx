@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import { usePathname } from "next/navigation";
+
 
 const DarkBlue = "#0056b3";
 const LightBg = "#f2f6fb";
-const White = "#ffffff";
+// const White = "#ffffff";
 
 /* ---------------- LAYOUT WRAPPER ---------------- */
 const LayoutWrapper = styled.div`
@@ -118,6 +120,10 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
+  const pathname = usePathname();
+const showHomeButton = pathname !== "/dashboard";
+
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -177,12 +183,19 @@ export default function DashboardLayout({ children }) {
       <Overlay $open={sidebarOpen} onClick={() => setSidebarOpen(false)} />
 
       {/* FIXED HOME BUTTON */}
-      <HomeButton onClick={() => {
-        router.push("/dashboard");
-        closeSidebar();
-      }}>
-        🏠
-      </HomeButton>
+
+{showHomeButton && (
+  <HomeButton
+    onClick={() => {
+      router.push("/dashboard");
+      closeSidebar();
+    }}
+  >
+    🏠
+    
+  </HomeButton>
+)}
+
 
       {/* SIDEBAR */}
       <Sidebar $open={sidebarOpen}>

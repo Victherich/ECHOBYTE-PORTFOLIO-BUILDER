@@ -13,17 +13,14 @@ import {
   doc,
   query,
   where,
+  serverTimestamp,
 } from "firebase/firestore";
 
-/* ========================================================
-   THEME
-========================================================= */
+/* ======================================================== */
 const DarkBlue = "#0056b3";
 const White = "#ffffff";
 
-/* ========================================================
-   SWAL
-========================================================= */
+/* ======================================================== */
 const fireSwal = (title, text, icon) =>
   Swal.fire({
     title: `<span style="color:${DarkBlue}; font-weight:700;">${title}</span>`,
@@ -32,9 +29,7 @@ const fireSwal = (title, text, icon) =>
     confirmButtonColor: DarkBlue,
   });
 
-/* ========================================================
-   STYLES
-========================================================= */
+/* ================= STYLES (UNCHANGED) ================= */
 
 const Container = styled.div`
   color: ${DarkBlue};
@@ -42,17 +37,14 @@ const Container = styled.div`
 `;
 
 const HeaderRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  display:flex;
+  align-items:center;
 `;
 
 const Title = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
+  font-size:2rem;
 `;
+
 
 const PlusButton = styled.button`
   position: fixed;
@@ -65,262 +57,267 @@ const PlusButton = styled.button`
   background: ${DarkBlue};
   color: white;
   border: none;
+  box-shadow: 0 6px 15px rgba(0, 86, 179, 0.3);
   cursor: pointer;
-  opacity: ${(p) => (p.disabled ? 0.5 : 1)};
-  pointer-events: ${(p) => (p.disabled ? "none" : "auto")};
-
+  transition: 0.3s;
   &:hover {
     background: #00448a;
   }
 `;
 
+
 const Select = styled.select`
   width: 260px;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #c5d9f6;
+  outline:none;
+    border: 1px solid #c5d9f6;
 `;
 
 const List = styled.div`
-  margin-top: 2.5rem;
+  margin-top:2.5rem;
 `;
 
 const Item = styled.div`
-  background: ${White};
-  padding: 1rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 86, 179, 0.15);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  @media (max-width: 428px) {
-    flex-direction: column;
-    gap: 10px;
-  }
+  background:${White};
+  padding:1rem;
+  border-radius:12px;
+  margin-bottom:1rem;
 `;
 
 const BtnRow = styled.div`
-  display: flex;
-  gap: 1rem;
+  display:flex;
+  gap:1rem;
 `;
 
 const Btn = styled.button`
-  padding: 8px 15px;
-  background: ${DarkBlue};
-  color: ${White};
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-
-  ${(p) =>
-    p.$delete &&
-    `
-      background:#d9534f;
-    `}
+  padding:8px 15px;
+  background:${DarkBlue};
+  color:white;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  ${(p)=>p.$delete && `background:#d9534f;`}
 `;
 
 /* ---------- MODAL ---------- */
 
 const ModalBackground = styled.div`
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 200;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  display:flex;
+  justify-content:center;
+  align-items:center;
 `;
 
 const ModalCard = styled.div`
-  background: ${White};
-  width: 95%;
-  max-width: 500px;
-  padding: 2rem;
-  border-radius: 14px;
+  background:${White};
+  width:95%;
+  max-width:500px;
+  padding:2rem;
+  border-radius:10px;
 `;
 
 const Label = styled.label`
-  font-weight: 600;
-  margin-top: 1rem;
-  display: block;
+  font-weight:600;
 `;
 
 const Input = styled.input`
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #c5d9f6;
-  margin-top: 6px;
+  width:100%;
+  padding:12px;
 `;
 
 const ModalFooter = styled.div`
-  margin-top: 1.8rem;
-  display: flex;
-  justify-content: space-between;
+  margin-top:1.8rem;
+  display:flex;
+  justify-content:space-between;
 `;
 
-/* ========================================================
-   PAGE
-========================================================= */
+/* ================= PAGE ================= */
 
-export default function EducationPage() {
-  const user = auth.currentUser;
+export default function EducationPage(){
 
-  const [profiles, setProfiles] = useState([]);
-  const [selectedProfile, setSelectedProfile] = useState("");
-  const [educations, setEducations] = useState([]);
+  const [profiles,setProfiles]=useState([]);
+  const [selectedProfile,setSelectedProfile]=useState("");
+  const [educations,setEducations]=useState([]);
 
-  const [modal, setModal] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [modal,setModal]=useState(false);
+  const [editingId,setEditingId]=useState(null);
 
-  const [form, setForm] = useState({
-    school: "",
-    graduationYear: "",
-    certificate: "",
+  const [loadingProfiles,setLoadingProfiles]=useState(false);
+  const [loadingEducation,setLoadingEducation]=useState(false);
+  const [saving,setSaving]=useState(false);
+  const [deletingId,setDeletingId]=useState(null);
+
+  const [form,setForm]=useState({
+    school:"",
+    graduationYear:"",
+    certificate:"",
   });
 
-  const profilesRef = user
-    ? collection(db, "users", user.uid, "profiles")
-    : null;
+  const profilesRef = collection(db,"profiles");
+  const eduRef = collection(db,"education");
 
-  const eduRef = user
-    ? collection(db, "users", user.uid, "education")
-    : null;
+  /* LOAD PROFILES */
+  const loadProfiles = async ()=>{
+    const user=auth.currentUser;
+    if(!user) return;
 
-  /* ---------- LOAD PROFILES ---------- */
-  useEffect(() => {
-    loadProfiles();
-  }, []);
+    setLoadingProfiles(true);
 
-  async function loadProfiles() {
-    if (!profilesRef) return;
-    const snap = await getDocs(profilesRef);
-    const arr = [];
-    snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+    const q=query(profilesRef,where("userId","==",user.uid));
+    const snap=await getDocs(q);
+
+    const arr=[];
+    snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+
     setProfiles(arr);
-  }
+    setLoadingProfiles(false);
 
-  /* ---------- LOAD EDUCATION BY PROFILE ---------- */
-  useEffect(() => {
-    if (selectedProfile) loadEducation(selectedProfile);
-    else setEducations([]);
-  }, [selectedProfile]);
-
-  async function loadEducation(profileId) {
-    const q = query(eduRef, where("profileId", "==", profileId));
-    const snap = await getDocs(q);
-    const arr = [];
-    snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
-    setEducations(arr);
-  }
-
-  /* ---------- MODAL ---------- */
-
-  function openNew() {
-    if (!selectedProfile) {
-      return fireSwal("Select Profile", "Please select a profile first.", "info");
+    if(arr.length===0){
+      fireSwal("No Profiles","Create profile first.","info");
     }
+  };
 
-    setModal(true);
+  useEffect(()=>{
+    const unsub=auth.onAuthStateChanged(u=>{
+      if(u) loadProfiles();
+    });
+    return ()=>unsub();
+  },[]);
+
+  /* LOAD EDUCATION */
+  const loadEducation=async(profileId)=>{
+    const user=auth.currentUser;
+    if(!user||!profileId) return;
+
+    setLoadingEducation(true);
+
+    const q=query(
+      eduRef,
+      where("profileId","==",profileId),
+      where("userId","==",user.uid)
+    );
+
+    const snap=await getDocs(q);
+    const arr=[];
+    snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+
+    setEducations(arr);
+    setLoadingEducation(false);
+  };
+
+  useEffect(()=>{
+    if(selectedProfile) loadEducation(selectedProfile);
+    else setEducations([]);
+  },[selectedProfile]);
+
+  /* MODAL */
+  const openNew=()=>{
+    if(!selectedProfile)
+      return fireSwal("Select Profile","Select profile first.","info");
+
     setEditingId(null);
-    setForm({ school: "", graduationYear: "", certificate: "" });
-  }
-
-  function openEdit(item) {
+    setForm({school:"",graduationYear:"",certificate:""});
     setModal(true);
+  };
+
+  const openEdit=(item)=>{
     setEditingId(item.id);
     setForm(item);
-  }
+    setModal(true);
+  };
 
-  /* ---------- SAVE ---------- */
+  /* SAVE */
+  const save=async()=>{
+    const user=auth.currentUser;
+    if(!user) return;
 
-  async function save() {
-    if (!form.school.trim()) {
-      return fireSwal("Missing", "School name is required.", "warning");
-    }
+    if(!form.school.trim())
+      return fireSwal("Missing","School required.","warning");
 
-    setLoading(true);
+    setSaving(true);
 
-    const data = {
+    const data={
       ...form,
-      profileId: selectedProfile,
-      updatedAt: Date.now(),
+      userId:user.uid,
+      profileId:selectedProfile,
+      updatedAt:serverTimestamp(),
     };
 
-    try {
-      if (editingId) {
-        await updateDoc(
-          doc(db, "users", user.uid, "education", editingId),
-          data
-        );
-        fireSwal("Updated", "Education updated.", "success");
-      } else {
-        await addDoc(eduRef, { ...data, createdAt: Date.now() });
-        fireSwal("Created", "Education added.", "success");
+    try{
+      if(editingId){
+        await updateDoc(doc(db,"education",editingId),data);
+      }else{
+        await addDoc(eduRef,{
+          ...data,
+          createdAt:serverTimestamp(),
+        });
       }
 
       setModal(false);
       loadEducation(selectedProfile);
-    } catch (err) {
-      fireSwal("Error", err.message, "error");
+      fireSwal("Saved","Education saved.","success");
+    }catch(err){
+      fireSwal("Error",err.message,"error");
     }
 
-    setLoading(false);
-  }
+    setSaving(false);
+  };
 
-  /* ---------- DELETE ---------- */
+  /* DELETE */
 
-  async function del(id) {
-    const c = await Swal.fire({
-      title: "Delete this education?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: DarkBlue,
+  const del=async(id)=>{
+    const c=await Swal.fire({
+      title:"Delete this education?",
+      icon:"warning",
+      showCancelButton:true,
+      confirmButtonColor:DarkBlue,
     });
 
-    if (!c.isConfirmed) return;
+    if(!c.isConfirmed) return;
 
-    await deleteDoc(doc(db, "users", user.uid, "education", id));
-    fireSwal("Deleted", "Education removed.", "success");
+    setDeletingId(id);
+
+    await deleteDoc(doc(db,"education",id));
+
+    fireSwal("Deleted","Education removed.","success");
+
+    setDeletingId(null);
     loadEducation(selectedProfile);
-  }
+  };
 
-  /* ========================================================
-     UI
-  ========================================================== */
+  /* UI */
 
   return (
     <Container>
       <HeaderRow>
         <Title>Education</Title>
- </HeaderRow>
-        <Select
-          value={selectedProfile}
-          onChange={(e) => setSelectedProfile(e.target.value)}
-        >
-          <option value="">Select Profile...</option>
-          {profiles.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title}
-            </option>
-          ))}
-        </Select>
-     
+      </HeaderRow>
 
-      <PlusButton onClick={openNew} disabled={!selectedProfile}>
+      <Select
+        value={selectedProfile}
+        onChange={(e)=>setSelectedProfile(e.target.value)}
+      >
+        <option value="">Select Profile...</option>
+        {profiles.map(p=>(
+          <option key={p.id} value={p.id}>{p.title}</option>
+        ))}
+      </Select>
+
+      <PlusButton onClick={openNew}>
         +
       </PlusButton>
 
       <List>
-        {!selectedProfile && (
-          <p style={{ opacity: 0.6 }}>Please select a profile.</p>
+        {!selectedProfile && <p>Please select a profile.</p>}
+        {loadingEducation && <p>Loading education...</p>}
+        {!loadingEducation && educations.length===0 && selectedProfile && (
+          <p>No Education created yet.</p>
         )}
 
-        {educations.map((e) => (
+        {educations.map(e=>(
           <Item key={e.id}>
             <div>
               <b>{e.school}</b>
@@ -329,9 +326,9 @@ export default function EducationPage() {
             </div>
 
             <BtnRow>
-              <Btn onClick={() => openEdit(e)}>Edit</Btn>
-              <Btn $delete onClick={() => del(e.id)}>
-                Delete
+              <Btn onClick={()=>openEdit(e)}>Edit</Btn>
+              <Btn $delete onClick={()=>del(e.id)}>
+                {deletingId===e.id ? "Deleting..." : "Delete"}
               </Btn>
             </BtnRow>
           </Item>
@@ -339,43 +336,41 @@ export default function EducationPage() {
       </List>
 
       {modal && (
-        <ModalBackground onClick={() => setModal(false)}>
-          <ModalCard onClick={(e) => e.stopPropagation()}>
-            <h2>{editingId ? "Edit Education" : "New Education"}</h2>
+        <ModalBackground onClick={()=>!saving && setModal(false)}>
+          <ModalCard onClick={(e)=>e.stopPropagation()}>
+
+            <h2>{editingId ? "Edit Education":"New Education"}</h2>
 
             <Label>School Name</Label>
             <Input
               value={form.school}
-              onChange={(e) =>
-                setForm({ ...form, school: e.target.value })
-              }
+              disabled={saving}
+              onChange={(e)=>setForm({...form,school:e.target.value})}
             />
 
             <Label>Graduation Year</Label>
             <Input
               value={form.graduationYear}
-              onChange={(e) =>
-                setForm({ ...form, graduationYear: e.target.value })
-              }
+              disabled={saving}
+              onChange={(e)=>setForm({...form,graduationYear:e.target.value})}
             />
 
             <Label>Certificate Title</Label>
             <Input
               value={form.certificate}
-              onChange={(e) =>
-                setForm({ ...form, certificate: e.target.value })
-              }
+              disabled={saving}
+              onChange={(e)=>setForm({...form,certificate:e.target.value})}
             />
 
             <ModalFooter>
-              <Btn onClick={save} disabled={loading}>
-                {loading ? "Saving..." : editingId ? "Update" : "Create"}
+              <Btn onClick={save} disabled={saving}>
+                {saving ? "Saving..." : editingId ? "Update":"Create"}
               </Btn>
-              <Btn $delete onClick={() => setModal(false)}>
+              <Btn $delete disabled={saving} onClick={()=>setModal(false)}>
                 Cancel
               </Btn>
             </ModalFooter>
-          </ModalCard>
+                   </ModalCard>
         </ModalBackground>
       )}
     </Container>

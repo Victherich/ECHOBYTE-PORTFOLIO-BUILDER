@@ -13,17 +13,14 @@ import {
   doc,
   query,
   where,
+  serverTimestamp,
 } from "firebase/firestore";
 
-/* ========================================================
-   THEME
-========================================================= */
+/* ======================================================== */
 const DarkBlue = "#0056b3";
 const White = "#ffffff";
 
-/* ========================================================
-   SWAL
-========================================================= */
+/* ======================================================== */
 const fireSwal = (title, text, icon) =>
   Swal.fire({
     title: `<span style="color:${DarkBlue}; font-weight:700;">${title}</span>`,
@@ -32,25 +29,20 @@ const fireSwal = (title, text, icon) =>
     confirmButtonColor: DarkBlue,
   });
 
-/* ========================================================
-   STYLES
-========================================================= */
+/* ================= STYLES ================= */
+
 const Container = styled.div`
   color: ${DarkBlue};
   position: relative;
 `;
 
 const HeaderRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  display:flex;
+  align-items:center;
 `;
 
 const Title = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
+  font-size:2rem;
 `;
 
 const PlusButton = styled.button`
@@ -64,323 +56,353 @@ const PlusButton = styled.button`
   background: ${DarkBlue};
   color: white;
   border: none;
+  box-shadow: 0 6px 15px rgba(0, 86, 179, 0.3);
   cursor: pointer;
-  opacity: ${(p) => (p.disabled ? 0.5 : 1)};
-  pointer-events: ${(p) => (p.disabled ? "none" : "auto")};
-
+  transition: 0.3s;
   &:hover {
     background: #00448a;
   }
 `;
 
+
 const Select = styled.select`
   width: 260px;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #c5d9f6;
+  outline:none;
+    border: 1px solid #c5d9f6;
 `;
 
 const List = styled.div`
-  margin-top: 2.5rem;
+  margin-top:2.5rem;
 `;
 
 const Item = styled.div`
-  background: ${White};
-  padding: 1rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 86, 179, 0.15);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  @media (max-width: 428px) {
-    flex-direction: column;
-    gap: 10px;
-  }
+  background:${White};
+  padding:1rem;
+  border-radius:12px;
+  margin-bottom:1rem;
 `;
 
 const BtnRow = styled.div`
-  display: flex;
-  gap: 1rem;
+  display:flex;
+  gap:1rem;
 `;
 
 const Btn = styled.button`
-  padding: 8px 15px;
-  background: ${DarkBlue};
-  color: ${White};
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-
-  ${(p) =>
-    p.$delete &&
-    `
-      background:#d9534f;
-    `}
+  padding:8px 15px;
+  background:${DarkBlue};
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+  border:none;
+  margin-top:10px;
+  ${(p)=>p.$delete && `background:#d9534f;`}
 `;
 
 /* ---------- MODAL ---------- */
+
 const ModalBackground = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 200;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:100;
 `;
 
 const ModalCard = styled.div`
-  background: ${White};
-  width: 95%;
-  max-width: 600px;
-  padding: 2rem;
-  border-radius: 14px;
+  background:${White};
+  width:95%;
+  max-width:600px;
+  padding:2rem;
 `;
 
 const Label = styled.label`
-  font-weight: 600;
-  margin-top: 1rem;
-  display: block;
+  font-weight:600;
 `;
 
 const Input = styled.input`
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #c5d9f6;
-  margin-top: 6px;
+  width:100%;
+  padding:12px;
 `;
 
 const TextArea = styled.textarea`
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #c5d9f6;
-  margin-top: 6px;
-  resize: vertical;
+  width:100%;
+  padding:12px;
 `;
 
 const ModalFooter = styled.div`
-  margin-top: 1.8rem;
-  display: flex;
-  justify-content: space-between;
+  margin-top:1.8rem;
+  display:flex;
+  justify-content:space-between;
 `;
 
-/* ========================================================
-   PAGE
-========================================================= */
+/* ================= PAGE ================= */
 
-export default function ProjectsPage() {
-  const user = auth.currentUser;
+export default function ProjectsPage(){
 
-  const [profiles, setProfiles] = useState([]);
-  const [selectedProfile, setSelectedProfile] = useState("");
-  const [projects, setProjects] = useState([]);
+  const [profiles,setProfiles]=useState([]);
+  const [selectedProfile,setSelectedProfile]=useState("");
+  const [projects,setProjects]=useState([]);
 
-  const [modal, setModal] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [modal,setModal]=useState(false);
+  const [editingId,setEditingId]=useState(null);
 
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    techStack: "",
-    github: "",
-    liveLink: "",
+  const [loadingProjects,setLoadingProjects]=useState(false);
+  const [saving,setSaving]=useState(false);
+  const [deletingId,setDeletingId]=useState(null);
+
+  const [form,setForm]=useState({
+    name:"",
+    description:"",
+    techStack:"",
+    github:"",
+    liveLink:"",
   });
 
-  const profilesRef = user
-    ? collection(db, "users", user.uid, "profiles")
-    : null;
+  const profilesRef = collection(db,"profiles");
+  const projectsRef = collection(db,"projects");
 
-  const projectsRef = user
-    ? collection(db, "users", user.uid, "projects")
-    : null;
+  /* LOAD PROFILES */
+  const loadProfiles = async ()=>{
+    const user=auth.currentUser;
+    if(!user) return;
 
-  /* ---------- LOAD PROFILES ---------- */
-  useEffect(() => {
-    loadProfiles();
-  }, []);
+    const q=query(profilesRef,where("userId","==",user.uid));
+    const snap=await getDocs(q);
 
-  async function loadProfiles() {
-    if (!profilesRef) return;
-    const snap = await getDocs(profilesRef);
-    const arr = [];
-    snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+    const arr=[];
+    snap.forEach(d=>arr.push({id:d.id,...d.data()}));
     setProfiles(arr);
-  }
 
-  /* ---------- LOAD PROJECTS BY PROFILE ---------- */
-  useEffect(() => {
-    if (selectedProfile) loadProjects(selectedProfile);
-    else setProjects([]);
-  }, [selectedProfile]);
+    if(arr.length===0){
+      fireSwal("No Profiles","Create a profile first.","info");
+    }
+  };
 
-  async function loadProjects(profileId) {
-    const q = query(projectsRef, where("profileId", "==", profileId));
-    const snap = await getDocs(q);
-    const arr = [];
-    snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+  useEffect(()=>{
+    const unsub=auth.onAuthStateChanged(u=>{
+      if(u) loadProfiles();
+    });
+    return ()=>unsub();
+  },[]);
+
+  /* LOAD PROJECTS */
+  const loadProjects=async(profileId)=>{
+    const user=auth.currentUser;
+    if(!user||!profileId) return;
+
+    setLoadingProjects(true);
+
+    const q=query(
+      projectsRef,
+      where("profileId","==",profileId),
+      where("userId","==",user.uid)
+    );
+
+    const snap=await getDocs(q);
+
+    const arr=[];
+    snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+
     setProjects(arr);
-  }
+    setLoadingProjects(false);
+  };
 
-  /* ---------- MODAL ---------- */
+  useEffect(()=>{
+    if(selectedProfile) loadProjects(selectedProfile);
+    else setProjects([]);
+  },[selectedProfile]);
 
-  function openNew() {
-    if (!selectedProfile)
-      return fireSwal("Select Profile", "Please select a profile first.", "info");
+  /* MODAL */
 
-    setModal(true);
+  const openNew=()=>{
+    if(!selectedProfile)
+      return fireSwal("Select Profile","Please select a profile first.","info");
+
     setEditingId(null);
-    setForm({ name: "", description: "", techStack: "", github: "", liveLink: "" });
-  }
-
-  function openEdit(item) {
+    setForm({
+      name:"",
+      description:"",
+      techStack:"",
+      github:"",
+      liveLink:"",
+    });
     setModal(true);
+  };
+
+  const openEdit=(item)=>{
     setEditingId(item.id);
     setForm(item);
-  }
+    setModal(true);
+  };
 
-  /* ---------- SAVE ---------- */
-  async function save() {
-    if (!form.name.trim()) return fireSwal("Missing", "Project name is required.", "warning");
+  /* SAVE */
 
-    setLoading(true);
+  const save=async()=>{
+    const user=auth.currentUser;
+    if(!user) return;
 
-    const data = {
+    if(!form.name.trim())
+      return fireSwal("Missing","Project name is required.","warning");
+
+    setSaving(true);
+
+    const data={
       ...form,
-      profileId: selectedProfile,
-      updatedAt: Date.now(),
+      userId:user.uid,
+      profileId:selectedProfile,
+      updatedAt:serverTimestamp(),
     };
 
-    try {
-      if (editingId) {
-        await updateDoc(doc(db, "users", user.uid, "projects", editingId), data);
-        fireSwal("Updated", "Project updated.", "success");
-      } else {
-        await addDoc(projectsRef, { ...data, createdAt: Date.now() });
-        fireSwal("Created", "Project added.", "success");
+    try{
+      if(editingId){
+        await updateDoc(doc(db,"projects",editingId),data);
+      }else{
+        await addDoc(projectsRef,{
+          ...data,
+          createdAt:serverTimestamp(),
+        });
       }
 
       setModal(false);
       loadProjects(selectedProfile);
-    } catch (err) {
-      fireSwal("Error", err.message, "error");
+      fireSwal("Saved","Project saved.","success");
+
+    }catch(err){
+      fireSwal("Error",err.message,"error");
     }
 
-    setLoading(false);
-  }
+    setSaving(false);
+  };
 
-  /* ---------- DELETE ---------- */
-  async function del(id) {
-    const c = await Swal.fire({
-      title: "Delete this project?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: DarkBlue,
+  /* DELETE */
+
+  const del=async(id)=>{
+
+    const c=await Swal.fire({
+      title:"Delete this project?",
+      icon:"warning",
+      showCancelButton:true,
+      confirmButtonColor:DarkBlue,
     });
 
-    if (!c.isConfirmed) return;
+    if(!c.isConfirmed) return;
 
-    await deleteDoc(doc(db, "users", user.uid, "projects", id));
-    fireSwal("Deleted", "Project removed.", "success");
+    setDeletingId(id);
+
+    await deleteDoc(doc(db,"projects",id));
+
+    fireSwal("Deleted","Project removed.","success");
+
+    setDeletingId(null);
     loadProjects(selectedProfile);
-  }
+  };
 
-  /* ========================================================
-     UI
-  ========================================================== */
+  /* ================= UI ================= */
 
   return (
     <Container>
       <HeaderRow>
         <Title>Projects</Title>
- </HeaderRow>
-        <Select
-          value={selectedProfile}
-          onChange={(e) => setSelectedProfile(e.target.value)}
-        >
-          <option value="">Select Profile...</option>
-          {profiles.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title}
-            </option>
-          ))}
-        </Select>
-     
+      </HeaderRow>
 
-      <PlusButton onClick={openNew} disabled={!selectedProfile}>
+      <Select
+        value={selectedProfile}
+        onChange={(e)=>setSelectedProfile(e.target.value)}
+      >
+        <option value="">Select Profile...</option>
+        {profiles.map(p=>(
+          <option key={p.id} value={p.id}>{p.title}</option>
+        ))}
+      </Select>
+
+      <PlusButton onClick={openNew}>
         +
       </PlusButton>
 
       <List>
-        {!selectedProfile && (
-          <p style={{ opacity: 0.6 }}>Please select a profile.</p>
+        {!selectedProfile && <p>Please select a profile.</p>}
+        {loadingProjects && <p>Loading projects...</p>}
+         {!loadingProjects && projects.length===0 && selectedProfile && (
+          <p>No Education created yet.</p>
         )}
 
-        {projects.map((p) => (
+        {projects.map((p)=>(
           <Item key={p.id}>
             <div>
-              <b>{p.name}</b>
-              <p>{p.description}</p>
-              <p>Tech: {p.techStack}</p>
-              {p.github && <p>GitHub: <a href={p.github} target="_blank">{p.github}</a></p>}
-              {p.liveLink && <p>Live: <a href={p.liveLink} target="_blank">{p.liveLink}</a></p>}
+              {Object.entries(p)
+                .filter(([key]) =>
+                  !["id","userId","profileId","createdAt","updatedAt"].includes(key)
+                )
+                .map(([key,value])=>(
+                  <p key={key}>
+                    <strong>
+                      {key.replace(/([A-Z])/g," $1").replace(/^./,s=>s.toUpperCase())}:
+                    </strong>{" "}
+                    {value || "-"}
+                  </p>
+                ))}
             </div>
 
             <BtnRow>
-              <Btn onClick={() => openEdit(p)}>Edit</Btn>
-              <Btn $delete onClick={() => del(p.id)}>Delete</Btn>
+              <Btn onClick={()=>openEdit(p)}>Edit</Btn>
+              <Btn $delete onClick={()=>del(p.id)}>
+                {deletingId===p.id ? "Deleting..." : "Delete"}
+              </Btn>
             </BtnRow>
           </Item>
         ))}
       </List>
 
       {modal && (
-        <ModalBackground onClick={() => setModal(false)}>
-          <ModalCard onClick={(e) => e.stopPropagation()}>
-            <h2>{editingId ? "Edit Project" : "New Project"}</h2>
+        <ModalBackground onClick={()=>!saving && setModal(false)}>
+          <ModalCard onClick={(e)=>e.stopPropagation()}>
+
+            <h2>{editingId ? "Edit Project":"New Project"}</h2>
 
             <Label>Project Name</Label>
             <Input
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e)=>setForm({...form,name:e.target.value})}
             />
 
             <Label>Description</Label>
             <TextArea
               rows={3}
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e)=>setForm({...form,description:e.target.value})}
             />
 
-            <Label>Tech Stack (comma separated)</Label>
+            <Label>Tech Stack</Label>
             <Input
               value={form.techStack}
-              onChange={(e) => setForm({ ...form, techStack: e.target.value })}
+              onChange={(e)=>setForm({...form,techStack:e.target.value})}
             />
 
             <Label>GitHub Link</Label>
             <Input
               value={form.github}
-              onChange={(e) => setForm({ ...form, github: e.target.value })}
+              onChange={(e)=>setForm({...form,github:e.target.value})}
             />
 
             <Label>Live Link</Label>
             <Input
               value={form.liveLink}
-              onChange={(e) => setForm({ ...form, liveLink: e.target.value })}
+              onChange={(e)=>setForm({...form,liveLink:e.target.value})}
             />
 
             <ModalFooter>
-              <Btn onClick={save} disabled={loading}>
-                {loading ? "Saving..." : editingId ? "Update" : "Create"}
+              <Btn onClick={save} disabled={saving}>
+                {saving ? "Saving..." : editingId ? "Update" : "Create"}
               </Btn>
-              <Btn $delete onClick={() => setModal(false)}>Cancel</Btn>
+              <Btn $delete disabled={saving} onClick={()=>setModal(false)}>
+                Cancel
+              </Btn>
             </ModalFooter>
+
           </ModalCard>
         </ModalBackground>
       )}

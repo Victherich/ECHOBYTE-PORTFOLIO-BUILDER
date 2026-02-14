@@ -13,17 +13,14 @@ import {
   doc,
   query,
   where,
+  serverTimestamp,
 } from "firebase/firestore";
 
-/* ========================================================
-   THEME
-========================================================= */
+/* ======================================================== */
 const DarkBlue = "#0056b3";
 const White = "#ffffff";
 
-/* ========================================================
-   SWAL
-========================================================= */
+/* ======================================================== */
 const fireSwal = (title, text, icon) =>
   Swal.fire({
     title: `<span style="color:${DarkBlue}; font-weight:700;">${title}</span>`,
@@ -32,9 +29,7 @@ const fireSwal = (title, text, icon) =>
     confirmButtonColor: DarkBlue,
   });
 
-/* ========================================================
-   STYLES
-========================================================= */
+/* ================= STYLES ================= */
 const Container = styled.div`
   color: ${DarkBlue};
   position: relative;
@@ -43,9 +38,10 @@ const Container = styled.div`
 const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   flex-wrap: wrap;
+  flex-direction:column;
 `;
 
 const Title = styled.h1`
@@ -78,6 +74,7 @@ const Select = styled.select`
   padding: 12px;
   border-radius: 10px;
   border: 1px solid #c5d9f6;
+  outline:none;
 `;
 
 const List = styled.div`
@@ -163,10 +160,7 @@ const ModalFooter = styled.div`
 /* ========================================================
    PAGE
 ========================================================= */
-
 export default function CertificationsPage() {
-  const user = auth.currentUser;
-
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState("");
   const [certifications, setCertifications] = useState([]);
@@ -174,6 +168,7 @@ export default function CertificationsPage() {
   const [modal, setModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -183,76 +178,80 @@ export default function CertificationsPage() {
     credentialUrl: "",
   });
 
-  const profilesRef = user
-    ? collection(db, "users", user.uid, "profiles")
-    : null;
-
-  const certsRef = user
-    ? collection(db, "users", user.uid, "certifications")
-    : null;
+  const profilesRef = collection(db, "profiles");
+  const certsRef = collection(db, "certifications");
 
   /* ---------- LOAD PROFILES ---------- */
   useEffect(() => {
-    loadProfiles();
+    const unsub = auth.onAuthStateChanged((user) => {
+      if (user) loadProfiles(user.uid);
+    });
   }, []);
 
-  async function loadProfiles() {
-    if (!profilesRef) return;
-    const snap = await getDocs(profilesRef);
+  const loadProfiles = async (uid) => {
+    setLoading(true);
+    const q = query(profilesRef, where("userId", "==", uid));
+    const snap = await getDocs(q);
     const arr = [];
     snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
     setProfiles(arr);
-  }
+    setLoading(false);
+  };
 
-  /* ---------- LOAD CERTIFICATIONS BY PROFILE ---------- */
+  /* ---------- LOAD CERTIFICATIONS ---------- */
   useEffect(() => {
     if (selectedProfile) loadCertifications(selectedProfile);
     else setCertifications([]);
   }, [selectedProfile]);
 
-  async function loadCertifications(profileId) {
-    const q = query(certsRef, where("profileId", "==", profileId));
+  const loadCertifications = async (profileId) => {
+    const user = auth.currentUser;
+    if (!user || !profileId) return;
+    setLoading(true);
+    const q = query(certsRef, where("profileId", "==", profileId), where("userId", "==", user.uid));
     const snap = await getDocs(q);
     const arr = [];
     snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
     setCertifications(arr);
-  }
+    setLoading(false);
+  };
 
   /* ---------- MODAL ---------- */
-  function openNew() {
-    if (!selectedProfile)
-      return fireSwal("Select Profile", "Please select a profile first.", "info");
-
+  const openNew = () => {
+    if (!selectedProfile) return fireSwal("Select Profile", "Please select a profile first.", "info");
     setModal(true);
     setEditingId(null);
     setForm({ name: "", organization: "", issueDate: "", expiryDate: "", credentialUrl: "" });
-  }
+  };
 
-  function openEdit(item) {
+  const openEdit = (item) => {
     setModal(true);
     setEditingId(item.id);
     setForm(item);
-  }
+  };
 
   /* ---------- SAVE ---------- */
-  async function save() {
+  const save = async () => {
     if (!form.name.trim()) return fireSwal("Missing", "Certificate name is required.", "warning");
     if (!form.organization.trim()) return fireSwal("Missing", "Organization is required.", "warning");
 
     setLoading(true);
+    const user = auth.currentUser;
+    if (!user) return;
 
     const data = {
       ...form,
       profileId: selectedProfile,
-      updatedAt: Date.now(),
+      userId: user.uid,
+      updatedAt: serverTimestamp(),
     };
 
     try {
       if (editingId) {
-        await updateDoc(doc(db, "users", user.uid, "certifications", editingId), data);
+        await updateDoc(doc(db, "certifications", editingId), data);
         fireSwal("Updated", "Certification updated.", "success");
       } else {
-        await addDoc(certsRef, { ...data, createdAt: Date.now() });
+        await addDoc(certsRef, { ...data, createdAt: serverTimestamp() });
         fireSwal("Created", "Certification added.", "success");
       }
 
@@ -263,37 +262,32 @@ export default function CertificationsPage() {
     }
 
     setLoading(false);
-  }
+  };
 
   /* ---------- DELETE ---------- */
-  async function del(id) {
+  const del = async (id) => {
     const c = await Swal.fire({
       title: "Delete this certification?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: DarkBlue,
     });
-
     if (!c.isConfirmed) return;
 
-    await deleteDoc(doc(db, "users", user.uid, "certifications", id));
+    setDeletingId(id);
+    await deleteDoc(doc(db, "certifications", id));
     fireSwal("Deleted", "Certification removed.", "success");
+    setDeletingId(null);
     loadCertifications(selectedProfile);
-  }
+  };
 
-  /* ========================================================
-     UI
-  ========================================================== */
-
+  /* ================= UI ================= */
   return (
     <Container>
       <HeaderRow>
         <Title>Certifications</Title>
 
-        <Select
-          value={selectedProfile}
-          onChange={(e) => setSelectedProfile(e.target.value)}
-        >
+        <Select value={selectedProfile} onChange={(e) => setSelectedProfile(e.target.value)}>
           <option value="">Select Profile...</option>
           {profiles.map((p) => (
             <option key={p.id} value={p.id}>
@@ -303,73 +297,66 @@ export default function CertificationsPage() {
         </Select>
       </HeaderRow>
 
-      <PlusButton onClick={openNew} disabled={!selectedProfile}>
+      <PlusButton onClick={openNew} >
         +
       </PlusButton>
 
       <List>
-        {!selectedProfile && (
-          <p style={{ opacity: 0.6 }}>Please select a profile.</p>
+        {!selectedProfile && <p style={{ opacity: 0.6 }}>Please select a profile.</p>}
+        {loading && <p>Loading...</p>}
+           {!loading && certifications.length===0 && selectedProfile && (
+          <p>No Certifications created yet.</p>
         )}
 
         {certifications.map((c) => (
           <Item key={c.id}>
             <div>
               <b>{c.name}</b> - {c.organization}
-              <p>Issued: {c.issueDate} {c.expiryDate && `| Expires: ${c.expiryDate}`}</p>
-              {c.credentialUrl && <p>Credential: <a href={c.credentialUrl} target="_blank">{c.credentialUrl}</a></p>}
+              <p>
+                Issued: {c.issueDate} {c.expiryDate && `| Expires: ${c.expiryDate}`}
+              </p>
+              {c.credentialUrl && (
+                <p>
+                  Credential: <a href={c.credentialUrl} target="_blank">{c.credentialUrl}</a>
+                </p>
+              )}
             </div>
 
             <BtnRow>
               <Btn onClick={() => openEdit(c)}>Edit</Btn>
-              <Btn $delete onClick={() => del(c.id)}>Delete</Btn>
+              <Btn $delete onClick={() => del(c.id)}>
+                {deletingId === c.id ? "Deleting..." : "Delete"}
+              </Btn>
             </BtnRow>
           </Item>
         ))}
       </List>
 
       {modal && (
-        <ModalBackground onClick={() => setModal(false)}>
+        <ModalBackground onClick={() => !loading && setModal(false)}>
           <ModalCard onClick={(e) => e.stopPropagation()}>
             <h2>{editingId ? "Edit Certification" : "New Certification"}</h2>
 
             <Label>Certificate Name</Label>
-            <Input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
 
             <Label>Organization</Label>
-            <Input
-              value={form.organization}
-              onChange={(e) => setForm({ ...form, organization: e.target.value })}
-            />
+            <Input value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
 
             <Label>Issue Date</Label>
-            <Input
-              type="date"
-              value={form.issueDate}
-              onChange={(e) => setForm({ ...form, issueDate: e.target.value })}
-            />
+            <Input type="date" value={form.issueDate} onChange={(e) => setForm({ ...form, issueDate: e.target.value })} />
 
             <Label>Expiry Date (Optional)</Label>
-            <Input
-              type="date"
-              value={form.expiryDate}
-              onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
-            />
+            <Input type="date" value={form.expiryDate} onChange={(e) => setForm({ ...form, expiryDate: e.target.value })} />
 
             <Label>Credential URL (Optional)</Label>
-            <Input
-              value={form.credentialUrl}
-              onChange={(e) => setForm({ ...form, credentialUrl: e.target.value })}
-            />
+            <Input value={form.credentialUrl} onChange={(e) => setForm({ ...form, credentialUrl: e.target.value })} />
 
             <ModalFooter>
               <Btn onClick={save} disabled={loading}>
                 {loading ? "Saving..." : editingId ? "Update" : "Create"}
               </Btn>
-              <Btn $delete onClick={() => setModal(false)}>Cancel</Btn>
+              <Btn $delete disabled={loading} onClick={() => setModal(false)}>Cancel</Btn>
             </ModalFooter>
           </ModalCard>
         </ModalBackground>

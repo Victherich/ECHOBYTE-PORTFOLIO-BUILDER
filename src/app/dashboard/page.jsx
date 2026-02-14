@@ -6,17 +6,18 @@ import { doc, getDoc } from "firebase/firestore";
 import styled from "styled-components";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import ProfilePage from "@/components/Profiles";
 
 
 // THEME COLORS
 const DarkBlue = "#0056b3";
 const White = "#FFFFFF";
-const SoftBg = "#f4f8ff";
+// const SoftBg = "#f4f8ff";
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  // gap: 2.5rem;
   padding: 1rem;
   color: ${DarkBlue};
 `;
@@ -41,9 +42,14 @@ const CardsGrid = styled.div`
 `;
 
 const MenuGrid = styled.div`
+margin-top:1rem;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1.5rem;
+
+  @media(max-width:768px){
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
 `;
 
 const Card = styled.div.withConfig({
@@ -156,7 +162,7 @@ const signOut = () => {
       <Greeting>Welcome back, {userData.name || userData.email} 👋</Greeting>
 
       {/* User Info Cards */}
-      <SectionTitle>Your Details</SectionTitle>
+      <SectionTitle>Your Primary Details</SectionTitle>
       <CardsGrid>
         <Card>
           <CardTitle>Full Name</CardTitle>
@@ -176,14 +182,14 @@ const signOut = () => {
       
       </CardsGrid>
 
+      <ProfilePage/>
+
 
       {/* MENU CARDS SECTION */}
-      <SectionTitle>Quick Actions</SectionTitle>
-
+      <SectionTitle>Sections</SectionTitle>
+<p>Open each section and start creating and updating your details for any of your profiles</p>
       <MenuGrid>
-        <MenuCard clickable onClick={() => router.push("/dashboard/profiles")}>
-          <CardTitle>My Profiles</CardTitle>
-        </MenuCard>
+  
 
         <MenuCard clickable onClick={() => router.push("/dashboard/personal-info")}>
           <CardTitle>Personal Info</CardTitle>
