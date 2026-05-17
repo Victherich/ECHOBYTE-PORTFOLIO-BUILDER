@@ -157,8 +157,7 @@ export default function ProjectsPage(){
   const [form,setForm]=useState({
     name:"",
     description:"",
-    techStack:"",
-    github:"",
+    skillsUsed:"",
     liveLink:"",
   });
 
@@ -226,8 +225,7 @@ export default function ProjectsPage(){
     setForm({
       name:"",
       description:"",
-      techStack:"",
-      github:"",
+      skillsUsed:"",
       liveLink:"",
     });
     setModal(true);
@@ -376,19 +374,13 @@ export default function ProjectsPage(){
               onChange={(e)=>setForm({...form,description:e.target.value})}
             />
 
-            <Label>Tech Stack</Label>
+            <Label>Skills Used</Label>
             <Input
-              value={form.techStack}
-              onChange={(e)=>setForm({...form,techStack:e.target.value})}
+              value={form.skillsUsed}
+              onChange={(e)=>setForm({...form,skillsUsed:e.target.value})}
             />
 
-            <Label>GitHub Link</Label>
-            <Input
-              value={form.github}
-              onChange={(e)=>setForm({...form,github:e.target.value})}
-            />
-
-            <Label>Live Link</Label>
+            <Label>Live Link (enter project live link , must start with https://)</Label>
             <Input
               value={form.liveLink}
               onChange={(e)=>setForm({...form,liveLink:e.target.value})}

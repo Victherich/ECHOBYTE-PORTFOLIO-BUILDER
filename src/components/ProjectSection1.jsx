@@ -127,25 +127,22 @@ export default function ProjectSection1({ projects }) {
               <Description>{project.description}</Description>
             )}
 
-            {project.techStack && <Tech>{project.techStack}</Tech>}
+            {project.skillsUsed && <Tech>{project.skillsUsed}</Tech>}
 
-            <LinksRow>
-              {project.github && (
-                <LinkBtn href={project.github} target="_blank">
-                  GitHub
-                </LinkBtn>
-              )}
+         <LinksRow>
 
-              {project.liveLink && (
-                <LinkBtn
-                  href={project.liveLink}
-                  target="_blank"
-                  $primary
-                >
-                  Live Demo
-                </LinkBtn>
-              )}
-            </LinksRow>
+
+  {project.liveLink && (
+    <LinkBtn
+      href={project.liveLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      $primary
+    >
+      Live Demo
+    </LinkBtn>
+  )}
+</LinksRow>
           </Card>
         ))}
       </Grid>
