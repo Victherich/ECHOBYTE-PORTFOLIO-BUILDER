@@ -9,6 +9,7 @@ import BiographySections from "@/components/BiographySections";
 import SkillSections from "@/components/SkillSections";
 import EducationSection1 from "@/components/EducationSection1";
 import ExperienceSections from "@/components/ExperienceSections";
+import ProjectSections from "@/components/ProjectSections";
 
 /* ================= STYLES ================= */
 const Container = styled.div`
@@ -159,6 +160,10 @@ export default function PublicProfileClient({ profileSlug }) {
      <ExperienceSections experiences={experience}/>
       )}
 
+       {projects.length > 0 && (
+       <ProjectSections projects={projects}/>
+      )}
+
 
       {summary.length > 0 && (
         <Section>
@@ -174,12 +179,7 @@ export default function PublicProfileClient({ profileSlug }) {
 
      
 
-      {projects.length > 0 && (
-        <Section>
-          <SubTitle>Projects</SubTitle>
-          {projects.map((p) => <ListItem key={p.id}>{p.name}</ListItem>)}
-        </Section>
-      )}
+     
 
       {certifications.length > 0 && (
         <Section>
