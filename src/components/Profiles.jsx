@@ -111,7 +111,7 @@ const ModalBackground = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 50;
+  z-index: 400;
 `;
 
 const ModalCard = styled.div`
@@ -493,7 +493,7 @@ await updateDoc(doc(db, "profiles", editingId), {
   : null;
 
 const compressedCover = formData.coverImage
-  ? await compressImage(formData.coverImage, 200)
+  ? await compressImage(formData.coverImage, 100)
   : null;
 
 let profileUrl = "";

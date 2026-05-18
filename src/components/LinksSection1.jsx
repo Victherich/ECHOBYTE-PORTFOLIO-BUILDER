@@ -1,0 +1,256 @@
+"use client";
+
+import styled from "styled-components";
+
+/* ================= WRAPPER ================= */
+
+const LinksWrapper = styled.section`
+  position: relative;
+  overflow: hidden;
+
+  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+  border-radius: 32px;
+
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+
+  border: 1px solid rgba(0, 86, 179, 0.12);
+
+  box-shadow:
+    0 18px 45px rgba(0, 86, 179, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  @media (max-width: 768px) {
+    padding: 1.6rem;
+    border-radius: 24px;
+  }
+`;
+
+/* ================= GLOWS ================= */
+
+const Glow = styled.div`
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  top: -140px;
+  right: -120px;
+  background: rgba(0, 86, 179, 0.06);
+  filter: blur(12px);
+`;
+
+const Glow2 = styled.div`
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  bottom: -90px;
+  left: -90px;
+  background: rgba(59, 130, 246, 0.08);
+  filter: blur(12px);
+`;
+
+/* ================= HEADER ================= */
+
+const Header = styled.div`
+  position: relative;
+  z-index: 2;
+  margin-bottom: 2rem;
+`;
+
+const HeaderTop = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const IconBox = styled.div`
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg, #0056b3, #3b82f6);
+  color: white;
+
+  font-size: 1.4rem;
+
+  box-shadow: 0 12px 28px rgba(0, 86, 179, 0.2);
+`;
+
+const TitleWrap = styled.div``;
+
+const Title = styled.h2`
+  margin: 0;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 900;
+  color: #0056b3;
+`;
+
+const Subtitle = styled.p`
+  margin: 0.3rem 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+`;
+
+const Divider = styled.div`
+  width: 90px;
+  height: 5px;
+  border-radius: 999px;
+  margin-top: 1rem;
+  background: linear-gradient(90deg, #0056b3, #60a5fa);
+`;
+
+/* ================= INTRO MESSAGE ================= */
+
+const IntroBox = styled.div`
+  position: relative;
+  z-index: 2;
+
+  background: rgba(0, 86, 179, 0.08);
+  border: 1px solid rgba(0, 86, 179, 0.12);
+
+  padding: 1rem 1.2rem;
+  border-radius: 18px;
+
+  margin-bottom: 1.5rem;
+
+  font-size: 0.95rem;
+  line-height: 1.6;
+
+  color: #0f172a;
+
+  backdrop-filter: blur(10px);
+`;
+
+/* ================= GRID ================= */
+
+const LinksGrid = styled.div`
+  position: relative;
+  z-index: 2;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+`;
+
+/* ================= LINK CARD ================= */
+
+const LinkCard = styled.a`
+  position: relative;
+  overflow: hidden;
+
+  text-decoration: none;
+
+  background: rgba(255, 255, 255, 0.88);
+
+  border-radius: 20px;
+
+  padding: 1.2rem 1.2rem;
+
+  border: 1px solid rgba(0, 86, 179, 0.1);
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 10px 25px rgba(0, 86, 179, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  transition: all 0.3s ease;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 18px 35px rgba(0, 86, 179, 0.14);
+  }
+
+  &:hover .arrow {
+    transform: translateX(4px);
+  }
+`;
+
+const LinkLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const LinkLabel = styled.span`
+  font-weight: 800;
+  color: #0f172a;
+`;
+
+const LinkHint = styled.span`
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+`;
+
+const Arrow = styled.span`
+  font-size: 1.2rem;
+  color: #0056b3;
+  transition: transform 0.2s ease;
+`;
+
+/* ================= COMPONENT ================= */
+
+export default function LinksSection1({ links }) {
+  if (!links || links.length === 0) return null;
+
+  return (
+    <LinksWrapper>
+      <Glow />
+      <Glow2 />
+
+      {/* HEADER */}
+      <Header>
+        <HeaderTop>
+          <IconBox>🔗</IconBox>
+
+          <TitleWrap>
+            <Title>Links</Title>
+            <Subtitle>
+              Everything you might want to explore about me
+            </Subtitle>
+          </TitleWrap>
+        </HeaderTop>
+
+        <Divider />
+      </Header>
+
+      {/* INTRO MESSAGE (FIRST PERSON VOICE) */}
+      <IntroBox>
+        👋 Hey there! These are my important links.  
+        Feel free to click any card below — each one will take you directly to something useful about me,
+        my work, or my online presence including payments.
+      </IntroBox>
+
+      {/* LINKS */}
+      <LinksGrid>
+        {links.map((l) => (
+          <LinkCard
+            key={l.id}
+            href={l.url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <LinkLeft>
+              <LinkLabel>{l.label}</LinkLabel>
+              <LinkHint>Click to open →</LinkHint>
+            </LinkLeft>
+
+            <Arrow className="arrow">↗</Arrow>
+          </LinkCard>
+        ))}
+      </LinksGrid>
+    </LinksWrapper>
+  );
+}

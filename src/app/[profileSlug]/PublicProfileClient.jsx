@@ -11,6 +11,9 @@ import EducationSection1 from "@/components/EducationSection1";
 import ExperienceSections from "@/components/ExperienceSections";
 import ProjectSections from "@/components/ProjectSections";
 import EducationSections from "@/components/EducationSections";
+import CertificationsSections from "@/components/CertificationsSections";
+import SummarySections from "@/components/SummarySections";
+import LinksSections from "@/components/LinksSections";
 
 /* ================= STYLES ================= */
 const Container = styled.div`
@@ -165,44 +168,21 @@ export default function PublicProfileClient({ profileSlug }) {
        <ProjectSections projects={projects}/>
       )}
 
-
-      {summary.length > 0 && (
-        <Section>
-          <SubTitle>Summary</SubTitle>
-          {summary.map((s) => <p key={s.id}>{s.summary}</p>)}
-        </Section>
-      )}
-
-    
-      
-
-
-
-     
-
-     
-
       {certifications.length > 0 && (
-        <Section>
-          <SubTitle>Certifications</SubTitle>
-          {certifications.map((c) => (
-            <ListItem key={c.id}>
-              {c.name} - {c.organization}
-            </ListItem>
-          ))}
-        </Section>
+       <CertificationsSections certifications={certifications}/>
       )}
 
       {links.length > 0 && (
-        <Section>
-          <SubTitle>Links</SubTitle>
-          {links.map((l) => (
-            <LinkItem key={l.id} href={l.url} target="_blank">
-              {l.label}
-            </LinkItem>
-          ))}
-        </Section>
+        <LinksSections links={links}/>
       )}
+
+
+
+         {summary.length > 0 && (
+        <SummarySections summary={summary}/>
+      )}
+
+
     </Container>
   );
 }

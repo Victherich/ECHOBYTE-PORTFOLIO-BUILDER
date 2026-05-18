@@ -51,7 +51,7 @@ const MenuItem = styled.p`
 
 const Content = styled.div`
   flex: 1;
-  padding: 2rem;
+  padding: 1rem;
   background: ${LightBg};
   min-height: 100vh;
 `;
@@ -75,7 +75,7 @@ const Overlay = styled.div`
 /* ---------------- HAMBURGER ---------------- */
 const Hamburger = styled.div`
   position: fixed;
-  top: 60px;
+  top: 40px;
   left: 1%;
   z-index: 250; 
   width: 40px;

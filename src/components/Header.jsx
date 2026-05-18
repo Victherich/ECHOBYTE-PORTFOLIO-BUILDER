@@ -150,8 +150,7 @@ export default function Header() {
         <Nav className={isNavOpen ? "open" : ""}>
           {/* Close menu on every link click */}
           <NavLink href="/" onClick={closeNav}>Home</NavLink>
-          {pathname === "/" && <NavLink href="#features" onClick={closeNav}>Features</NavLink>}
-          {pathname === "/" && <NavLink href="#how-it-works" onClick={closeNav}>How It Works</NavLink>}
+          <NavLink href="/profiles" onClick={closeNav}>See Talents & Creators</NavLink>
           <NavLink href="/contact" onClick={closeNav}>Contact</NavLink>
         </Nav>
 

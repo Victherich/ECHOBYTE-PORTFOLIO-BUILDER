@@ -18,7 +18,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   // gap: 2.5rem;
-  padding: 1rem;
+  // padding: 1rem;
   color: ${DarkBlue};
 `;
 
@@ -228,9 +228,9 @@ const signOut = () => {
           <CardTitle>Summary</CardTitle>
         </MenuCard>
 
-        <MenuCard clickable onClick={() => router.push("/dashboard/settings")}>
+        {/* <MenuCard clickable onClick={() => router.push("/dashboard/settings")}>
           <CardTitle>Settings</CardTitle>
-        </MenuCard>
+        </MenuCard> */}
 
         <MenuCard clickable onClick={() => signOut()}>
           <CardTitle>Logout</CardTitle>
