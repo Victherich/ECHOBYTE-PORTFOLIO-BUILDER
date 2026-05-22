@@ -216,7 +216,7 @@ const HeaderContainer = styled.header`
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 9999;
+  z-index: 100;
 
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(14px);
@@ -233,7 +233,7 @@ const Inner = styled.div`
   justify-content: space-between;
   align-items: center;
 
-  padding: 1rem 1.5rem;
+  padding: 1.35rem 1.5rem;
 `;
 
 /* ================= LOGO ================= */
