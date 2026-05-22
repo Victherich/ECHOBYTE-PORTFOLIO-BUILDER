@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import { auth, db } from "@/firebaseConfig";
+import { categories } from "./categories";
 import {
   collection,
   addDoc,
@@ -249,6 +250,30 @@ export default function ProfilePage() {
     // { id: "4", name: "Gold Premium" },
   ];
 
+
+//   const categories = [
+//   { id: "1", name: "Technology" },
+//   { id: "2", name: "Design & Creative" },
+//   { id: "3", name: "Business & Finance" },
+//   { id: "4", name: "Marketing & Sales" },
+//   { id: "5", name: "Media & Communication" },
+//   { id: "6", name: "Education & Training" },
+//   { id: "7", name: "Healthcare & Wellness" },
+//   { id: "8", name: "Engineering & Manufacturing" },
+//   { id: "9", name: "Science & Research" },
+//   { id: "10", name: "Construction & Real Estate" },
+//   { id: "11", name: "Law & Public Service" },
+//   { id: "12", name: "Hospitality & Tourism" },
+//   { id: "13", name: "Fashion & Beauty" },
+//   { id: "14", name: "Arts & Entertainment" },
+//   { id: "15", name: "Trades & Skilled Services" },
+//   { id: "16", name: "Agriculture & Environment" },
+//   { id: "17", name: "Transportation & Logistics" },
+//   { id: "18", name: "Nonprofit & Community" },
+//   { id: "19", name: "Religion & Spirituality" },
+//   { id: "20", name: "Other" },
+// ];
+
   const [formData, setFormData] = useState({
   profileImage: null,
   coverImage: null,
@@ -261,6 +286,7 @@ const [coverPreview, setCoverPreview] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [theme, setTheme] = useState("1");
+  const [categoryId, setCategoryId] = useState("");
   const [editingId, setEditingId] = useState(null);
 
   const profilesRef = collection(db, "profiles");
@@ -409,6 +435,7 @@ const uploadToCloudinary = async (blob, folder) => {
     setEditingId(null);
     setTitle("");
     setTheme("1");
+    setCategoryId("");
   };
 
   const openEditModal = (p) => {
@@ -416,6 +443,7 @@ const uploadToCloudinary = async (blob, folder) => {
     setEditingId(p.id);
     setTitle(p.title);
     setTheme(p.theme);
+    setCategoryId(p.categoryId || "");
   };
 
   const saveProfile = async () => {
@@ -425,6 +453,14 @@ const uploadToCloudinary = async (blob, folder) => {
     if (!title.trim()) {
       return Swal.fire("Missing Field", "Profile title is required.", "warning");
     }
+
+    if (!categoryId) {
+  return Swal.fire(
+    "Missing Field",
+    "Please select a category.",
+    "warning"
+  );
+}
 
     setLoading(true);
     // const loadingAlert=Swal.showLoading();
@@ -450,12 +486,31 @@ if (formData.coverImage) {
   coverUrl = await uploadToCloudinary(blob, "portfolioprofiles/cover");
 }
 
-await updateDoc(doc(db, "profiles", editingId), {
+// await updateDoc(doc(db, "profiles", editingId), {
+//   title,
+//   theme,
+//   categoryId,
+//   profileImage: profileUrl,
+//   coverImage: coverUrl,
+// });
+const updateData = {
   title,
   theme,
-  profileImage: profileUrl,
-  coverImage: coverUrl,
-});
+  categoryId,
+};
+
+if (profileUrl !== undefined) {
+  updateData.profileImage = profileUrl;
+}
+
+if (coverUrl !== undefined) {
+  updateData.coverImage = coverUrl;
+}
+
+await updateDoc(
+  doc(db, "profiles", editingId),
+  updateData
+);
 
       Swal.fire("Updated!", "Profile updated successfully.", "success");
    } else {
@@ -519,6 +574,7 @@ await addDoc(profilesRef, {
   profileNumber: nextProfileNumber,
   title,
   theme,
+  categoryId,
 
   profileImage: profileUrl,
   coverImage: coverUrl,
@@ -638,7 +694,7 @@ const deleteProfile = async (profileId) => {
   return (
     <Container>
       <Title>Manage Profiles</Title>
-      <p>You can create multiple portfolios under your account.</p>
+      <p>Start by creating a profile, then scroll down  to the <b>SECTIONS</b> area and start editing each section for each of the profile you have created. You can create multiple portfolios for your different professions under your account.</p>
 
       <PlusButton onClick={openNewModal}>+ Add Profile</PlusButton>
 
@@ -682,7 +738,12 @@ const deleteProfile = async (profileId) => {
             {themeDesigns.find((t) => t.id === p.theme)?.name}
           </SubText>
 
-          <SubText>{p.id}</SubText>
+          <SubText>
+  Category:{" "}
+  {categories.find((c) => c.id === p.categoryId)?.name || "N/A"}
+</SubText>
+
+          {/* <SubText>{p.id}</SubText> */}
 
           <PreviewBtn
             onClick={() =>
@@ -734,6 +795,21 @@ const deleteProfile = async (profileId) => {
                 </option>
               ))}
             </Select>
+
+            <Label>Category</Label>
+
+<Select
+  value={categoryId}
+  onChange={(e) => setCategoryId(e.target.value)}
+>
+  <option value="">Select Category</option>
+
+  {categories.map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name}
+    </option>
+  ))}
+</Select>
 
 
 

@@ -279,7 +279,7 @@ export default function ProjectSection1({ projects }) {
                     target="_blank"
                     $primary
                   >
-                    Live
+                    View Full Project
                   </LinkBtn>
                 )}
 
