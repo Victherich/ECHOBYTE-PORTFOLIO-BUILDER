@@ -403,6 +403,7 @@ const Subtitle = styled.p`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
+  justify-content:center;
   margin-top: 2rem;
   flex-wrap: wrap;
 `;

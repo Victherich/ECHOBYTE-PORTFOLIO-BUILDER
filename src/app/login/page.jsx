@@ -51,16 +51,26 @@ const FormWrapper = styled.div`
   color: ${DarkBlue};
 `;
 
+
 const Title = styled.h2`
   text-align: center;
   margin-bottom: 1.5rem;
   color: ${DarkBlue};
 `;
-
 const Label = styled.label`
   display: block;
+
   font-weight: 600;
-  margin-bottom: 0.5rem;
+
+  margin-bottom: 0.55rem;
+
+  color: ${DarkBlue};
+
+  text-align: left;
+`;
+
+const InputGroup = styled.div`
+  margin-bottom: 1.2rem;
 `;
 
 const Input = styled.input`
@@ -75,6 +85,27 @@ const Input = styled.input`
     border-color: ${DarkBlue};
     outline: none;
   }
+`;
+
+const PasswordWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const EyeButton = styled.button`
+  position: absolute;
+  right: 12px;
+  top: 37%;
+
+  transform: translateY(-50%);
+
+  background: none;
+  border: none;
+
+  cursor: pointer;
+
+  font-size: 0.95rem;
+  color: ${DarkBlue};
 `;
 
 const Button = styled.button`
@@ -111,6 +142,7 @@ const UserLogin = () => {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -161,23 +193,40 @@ const UserLogin = () => {
       <FormWrapper>
         <Title>Login</Title>
         <form onSubmit={handleSubmit}>
-          <Label>Email</Label>
-          <Input
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
+<InputGroup>
+  <Label>Email</Label>
 
-          <Label>Password</Label>
-          <Input
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
+  <Input
+    name="email"
+    type="email"
+    value={form.email}
+    onChange={handleChange}
+    required
+  />
+</InputGroup>
+
+<InputGroup>
+  <Label>Password</Label>
+
+  <PasswordWrapper>
+    <Input
+      name="password"
+      type={showPassword ? "text" : "password"}
+      value={form.password}
+      onChange={handleChange}
+      required
+    />
+
+    <EyeButton
+      type="button"
+      onClick={() =>
+        setShowPassword(!showPassword)
+      }
+    >
+      {showPassword ? "Hide" : "Show"}
+    </EyeButton>
+  </PasswordWrapper>
+</InputGroup>
 
           <Button type="submit">Login</Button>
           <LinkText onClick={() => router.push("/signup")}>

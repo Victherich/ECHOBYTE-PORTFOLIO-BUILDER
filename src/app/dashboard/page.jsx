@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import ProfilePage from "@/components/Profiles";
+import SubscriptionComponent from "@/components/SubscriptionComponent";
 
 
 // THEME COLORS
@@ -181,14 +182,14 @@ const signOut = () => {
 
       
       </CardsGrid>
-
+<SubscriptionComponent/>
       <ProfilePage/>
 
 
       {/* MENU CARDS SECTION */}
-      <SectionTitle>Sections</SectionTitle>
-<p>Open each section and start creating and updating your details for any of your profiles</p>
-      <MenuGrid>
+      {/* <SectionTitle>Sections</SectionTitle> */}
+{/* <p>Open each section and start creating and updating your details for any of your profiles</p> */}
+      {/* <MenuGrid>
   
 
         <MenuCard clickable onClick={() => router.push("/dashboard/personal-info")}>
@@ -228,14 +229,10 @@ const signOut = () => {
           <CardTitle>Summary</CardTitle>
         </MenuCard>
 
-        {/* <MenuCard clickable onClick={() => router.push("/dashboard/settings")}>
-          <CardTitle>Settings</CardTitle>
-        </MenuCard> */}
-
         <MenuCard clickable onClick={() => signOut()}>
           <CardTitle>Logout</CardTitle>
         </MenuCard>
-      </MenuGrid>
+      </MenuGrid> */}
     </Container>
   );
 };

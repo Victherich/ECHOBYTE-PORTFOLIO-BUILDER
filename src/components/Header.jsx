@@ -201,6 +201,10 @@ import { useState } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { auth, db } from "../firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 /* ================= COLORS ================= */
 
@@ -340,7 +344,7 @@ const Overlay = styled.div`
   inset: 0;
 
   background: rgba(0, 0, 0, 0.4);
-  z-index: 9998;
+  z-index: 99;
 `;
 
 /* ================= COMPONENT ================= */
@@ -348,6 +352,29 @@ const Overlay = styled.div`
 export default function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          setUserData(userSnap.data());
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      setUserData(null);
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
 
   return (
     <>
@@ -389,13 +416,18 @@ export default function Header() {
               Contact
             </NavLink>
 
-            <NavLink
-              href="/login"
-              $active={pathname === "/login"}
-              onClick={() => setOpen(false)}
-            >
-              SignUp/Login
-            </NavLink>
+           <NavLink
+  href={userData ? "/login" : "/login"}
+  $active={
+    pathname === "/login" ||
+    pathname === "/login"
+  }
+  onClick={() => setOpen(false)}
+>
+  {userData
+    ? `Hi ${userData.name?.split(" ")[0]}`
+    : "SignUp/Login"}
+</NavLink>
           </Nav>
 
           {/* HAMBURGER */}

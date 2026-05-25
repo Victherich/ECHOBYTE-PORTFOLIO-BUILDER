@@ -201,8 +201,8 @@ const showHomeButton = pathname !== "/dashboard";
       <Sidebar $open={sidebarOpen}>
         <h2 style={{ marginBottom: "2rem" }}>Dashboard</h2>
 
-        <Link href="/dashboard" onClick={closeSidebar}><MenuItem>Home</MenuItem></Link>
-        <Link href="/dashboard/profiles" onClick={closeSidebar}><MenuItem>My Profiles</MenuItem></Link>
+        <Link href="/dashboard" onClick={closeSidebar}><MenuItem>Dashboard Home</MenuItem></Link>
+        {/* <Link href="/dashboard/profiles" onClick={closeSidebar}><MenuItem>My Profiles</MenuItem></Link>
        
         <Link href="/dashboard/personal-info" onClick={closeSidebar}><MenuItem>Personal Info</MenuItem></Link>
         <Link href="/dashboard/biography" onClick={closeSidebar}><MenuItem>Biography</MenuItem></Link>
@@ -214,7 +214,7 @@ const showHomeButton = pathname !== "/dashboard";
        
         <Link href="/dashboard/links" onClick={closeSidebar}><MenuItem>Manage Links</MenuItem></Link>
         <Link href="/dashboard/summary" onClick={closeSidebar}><MenuItem>Summary</MenuItem></Link>
-        <Link href="/dashboard/settings" onClick={closeSidebar}><MenuItem>Settings</MenuItem></Link>
+        <Link href="/dashboard/settings" onClick={closeSidebar}><MenuItem>Settings</MenuItem></Link> */}
 
         <MenuItem 
           onClick={() => {
