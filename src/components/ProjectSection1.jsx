@@ -268,9 +268,9 @@ export default function ProjectSection1({ projects }) {
                 <Description>{project.description}</Description>
               )}
 
-              {project.skillsUsed && (
+              {/* {project.skillsUsed && (
                 <Tech>{project.skillsUsed}</Tech>
-              )}
+              )} */}
 
               <LinksRow>
                 {project.liveLink && (
@@ -279,7 +279,7 @@ export default function ProjectSection1({ projects }) {
                     target="_blank"
                     $primary
                   >
-                    View Full Project
+                   Click to View Full Project
                   </LinkBtn>
                 )}
 

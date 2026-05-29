@@ -142,7 +142,7 @@ export default function ExperienceModal({
       location: "",
       duration: "",
       responsibilities: "",
-      skills: "",
+      // skills: "",
     },
   ]);
 
@@ -181,7 +181,7 @@ export default function ExperienceModal({
         location: "",
         duration: "",
         responsibilities: "",
-        skills: "",
+        // skills: "",
       },
     ]);
   };
@@ -196,7 +196,7 @@ export default function ExperienceModal({
       location: e.location || "",
       duration: e.duration || "",
       responsibilities: e.responsibilities || "",
-      skills: e.skills || "",
+      // skills: e.skills || "",
     }));
 
     setBlocks(normalized.length ? normalized : [normalized]);
@@ -216,7 +216,7 @@ export default function ExperienceModal({
     // if (blocks.some((b) => !b.jobTitle.trim())) {
     //   return Swal.fire("Missing", "Job title required", "warning");
     // }
-    if(!blocks[0].jobTitle||!blocks[0].company||!blocks[0].location||!blocks[0].duration||!blocks[0].responsibilities||!blocks[0].skills){
+    if(!blocks[0].jobTitle||!blocks[0].company||!blocks[0].location||!blocks[0].duration||!blocks[0].responsibilities){
       return Swal.fire("Missing", "All fields are required", "warning");
     }
 
@@ -386,14 +386,14 @@ setDeletingId(id);
                     }
                   />
 
-                  <Label>Skills: Mention the Skills you used in the Role. Seperate them with comma ( , )</Label>
+                  {/* <Label>Skills: Mention the Skills you used in the Role. Seperate them with comma ( , )</Label>
                   <TextArea
                     rows={2}
                     value={b.skills}
                     onChange={(e) =>
                       updateBlock(i, "skills", e.target.value)
                     }
-                  />
+                  /> */}
                 </div>
               ))}
 

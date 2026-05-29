@@ -374,12 +374,12 @@ export default function CertificationsSection1({
                 </CertificateName>
 
                 <Organization>
-                  {cert.organization}
+               Issued by:   {cert.organization}
                 </Organization>
 
                 {cert.issueDate && (
                   <DateBadge>
-                    Issued: {cert.issueDate}
+                    Issued on: {cert.issueDate}
                   </DateBadge>
                 )}
 

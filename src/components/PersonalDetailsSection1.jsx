@@ -333,6 +333,16 @@ const Name = styled.h1`
   text-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 `;
 
+const Name2 = styled.h1`
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 4rem);
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -3px;
+
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+`;
+
 const Nick = styled.p`
   margin: 1rem 0 0;
   font-size: 1.08rem;
@@ -513,6 +523,7 @@ export default function PersonalDetailsSection1({ data, profile }) {
     { label: "Gender", value: data.gender },
     { label: "Nationality", value: data.nationality },
     { label: "Languages", value: data.languages },
+     { label: "location", value: data.location },
   ].filter((f) => f.value);
 
   const tags = [data.hobbies, data.personalTraits].filter(Boolean);
@@ -524,27 +535,17 @@ export default function PersonalDetailsSection1({ data, profile }) {
 
       <Hero>
         <Left>
+           <Name>{profile?.title}</Name>
+           <br/>
           <Badge>✨ Personal Profile</Badge>
 
-          <Name>{fullName}</Name>
+         
+
+          <Name2>{fullName}</Name2>
 
           {data.nickName && <Nick>“{data.nickName}”</Nick>}
 
-          <Meta>
-            {data.location && (
-              <MetaCard>
-                <MetaLabel>Location</MetaLabel>
-                <MetaValue>{data.location}</MetaValue>
-              </MetaCard>
-            )}
-
-            {data.email && (
-              <MetaCard>
-                <MetaLabel>Email</MetaLabel>
-                <MetaValue>{data.email}</MetaValue>
-              </MetaCard>
-            )}
-          </Meta>
+        
         </Left>
 
         <ProfileWrapper>
@@ -570,13 +571,14 @@ export default function PersonalDetailsSection1({ data, profile }) {
           ))}
         </Grid>
 
-        {tags.length > 0 && (
+
           <Tags>
-            {tags.map((t, i) => (
-              <Tag key={i}>{t}</Tag>
-            ))}
+          
+              <Tag>Hobbies: {data.hobbies}</Tag>
+              <Tag>Traits: {data.personalTraits}</Tag>
+        
           </Tags>
-        )}
+      
       </Bottom>
     </Wrapper>
   );

@@ -177,6 +177,7 @@ const Location = styled.p`
 const Duration = styled.span`
   padding: 0.55rem 0.9rem;
   border-radius: 999px;
+  text-align:center;
 
   font-size: 0.75rem;
   font-weight: 800;
@@ -264,13 +265,13 @@ export default function ExperienceSection1({ experiences }) {
                 <Duration>{item.duration}</Duration>
               </TopRow>
 
-              <JobTitle>{item.jobTitle}</JobTitle>
+              <JobTitle>Role: {item.jobTitle}</JobTitle>
 
               <Responsibilities>
-                {item.responsibilities}
+                <b>Responsibilities:</b> {item.responsibilities}
               </Responsibilities>
 
-              {item.skills && (
+              {/* {item.skills && (
                 <SkillsWrap>
                   {item.skills
                     .split(",")
@@ -280,7 +281,7 @@ export default function ExperienceSection1({ experiences }) {
                       </Skill>
                     ))}
                 </SkillsWrap>
-              )}
+              )} */}
             </ExperienceCard>
           );
         })}

@@ -246,7 +246,7 @@ const Logo = styled.div`
   font-size: 1.2rem;
   font-weight: 800;
   color: ${Dark};
-  cursor: pointer;
+
 
   span {
     color: ${Blue};
@@ -354,6 +354,14 @@ export default function Header() {
   const pathname = usePathname();
   const [userData, setUserData] = useState(null);
 
+const showMenu = [
+  "/",
+  "/contact",
+  "/login",
+  "/signup",
+  "/profiles",
+].some((path) => pathname === path || pathname.startsWith("/dashboard"));
+
   useEffect(() => {
   const unsubscribe = onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -376,6 +384,8 @@ export default function Header() {
   return () => unsubscribe();
 }, []);
 
+
+
   return (
     <>
       {/* OVERLAY */}
@@ -384,61 +394,57 @@ export default function Header() {
       <HeaderContainer>
         <Inner>
           {/* LOGO */}
-          <Link href="/" onClick={() => setOpen(false)}>
+          <div onClick={() => setOpen(false)}>
             <Logo>
               My<span>Portfolio</span>
             </Logo>
-          </Link>
+          </div>
 
           {/* NAV */}
-          <Nav $open={open}>
-            <NavLink
-              href="/"
-              $active={pathname === "/"}
-              onClick={() => setOpen(false)}
-            >
-              Home
-            </NavLink>
+      
+{/* MENU (conditional) */}
+{showMenu && (
+  <>
+    <Nav $open={open}>
+      <NavLink href="/" $active={pathname === "/"} onClick={() => setOpen(false)}>
+        Home
+      </NavLink>
 
-            <NavLink
-              href="/profiles"
-              $active={pathname === "/profiles"}
-              onClick={() => setOpen(false)}
-            >
-              Discover
-            </NavLink>
+      <NavLink
+        href="/profiles"
+        $active={pathname === "/profiles"}
+        onClick={() => setOpen(false)}
+      >
+        Discover
+      </NavLink>
 
-            <NavLink
-              href="/contact"
-              $active={pathname === "/contact"}
-              onClick={() => setOpen(false)}
-            >
-              Contact
-            </NavLink>
+      <NavLink
+        href="/contact"
+        $active={pathname === "/contact"}
+        onClick={() => setOpen(false)}
+      >
+        Contact
+      </NavLink>
 
-           <NavLink
-  href={userData ? "/login" : "/login"}
-  $active={
-    pathname === "/login" ||
-    pathname === "/login"
-  }
-  onClick={() => setOpen(false)}
->
-  {userData
-    ? `Hi ${userData.name?.split(" ")[0]}`
-    : "SignUp/Login"}
-</NavLink>
-          </Nav>
+      <NavLink
+        href="/login"
+        $active={pathname === "/login"}
+        onClick={() => setOpen(false)}
+      >
+        {userData ? `Hi ${userData.name?.split(" ")[0]}` : "SignUp/Login"}
+      </NavLink>
+    </Nav>
 
-          {/* HAMBURGER */}
-          <Hamburger
-            onClick={() => setOpen(!open)}
-            className={open ? "open" : ""}
-          >
-            <div />
-            <div />
-            <div />
-          </Hamburger>
+    <Hamburger
+      onClick={() => setOpen(!open)}
+      className={open ? "open" : ""}
+    >
+      <div />
+      <div />
+      <div />
+    </Hamburger>
+  </>
+)}
         </Inner>
       </HeaderContainer>
 

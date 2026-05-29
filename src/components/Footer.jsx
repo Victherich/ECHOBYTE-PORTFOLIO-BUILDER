@@ -141,6 +141,18 @@ export default function Footer() {
         echobyteconcept@gmail.com · +234 706 348 0314 · +234 816 886 4508
       </FooterText>
 
+   <FooterText>
+  To build your portfolio, visit:{" "}
+  <a
+    href="https://portfolio.echobyteconcept.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{ color: "#2563eb", textDecoration: "underline" }}
+  >
+    portfolio.echobyteconcept.com
+  </a>
+</FooterText>
+
       {/* COPYRIGHT */}
       <FooterText>
         © {year} EchoByte Concept. All rights reserved.
