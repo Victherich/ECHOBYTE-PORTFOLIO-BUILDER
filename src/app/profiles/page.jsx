@@ -198,36 +198,92 @@ const [category, setCategory] = useState("");
 
 
   useEffect(() => {
-    const load = async () => {
-      const [profileSnap, personalSnap] = await Promise.all([
-        getDocs(collection(db, "profiles")),
-        getDocs(collection(db, "personalInfo")),
-      ]);
+    // const load = async () => {
+    //   const [profileSnap, personalSnap] = await Promise.all([
+    //     getDocs(collection(db, "profiles")),
+    //     getDocs(collection(db, "personalInfo")),
+    //   ]);
 
-      const profilesData = profileSnap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
+    //   const profilesData = profileSnap.docs.map((d) => ({
+    //     id: d.id,
+    //     ...d.data(),
+    //   }));
 
-      const personalData = personalSnap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
+    //   const personalData = personalSnap.docs.map((d) => ({
+    //     id: d.id,
+    //     ...d.data(),
+    //   }));
 
-      // 🔥 MERGE LOGIC (VERY IMPORTANT)
-      const merged = profilesData.map((p) => {
-        const personal = personalData.find(
-          (info) => info.profileId === p.id
-        );
+    //   // 🔥 MERGE LOGIC (VERY IMPORTANT)
+    //   const merged = profilesData.map((p) => {
+    //     const personal = personalData.find(
+    //       (info) => info.profileId === p.id
+    //     );
 
-        return {
-          ...p,
-          personal,
-        };
-      });
+    //     return {
+    //       ...p,
+    //       personal,
+    //     };
+    //   });
 
-      setProfiles(merged);
+    //   setProfiles(merged);
+    // };
+
+
+const load = async () => {
+  const [profileSnap, personalSnap, subscriptionSnap] = await Promise.all([
+    getDocs(collection(db, "profiles")),
+    getDocs(collection(db, "personalInfo")),
+    getDocs(collection(db, "subscriptions")),
+  ]);
+
+  const profilesData = profileSnap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  }));
+
+  const personalData = personalSnap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  }));
+
+  const subscriptionsData = subscriptionSnap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  }));
+
+  // Get users with active, unexpired subscriptions
+  const activeUserIds = new Set();
+
+  subscriptionsData.forEach((sub) => {
+    const expiry = new Date(sub.subscriptionExpiryDate);
+
+    if (
+      sub.status === "active" &&
+      expiry > new Date()
+    ) {
+      activeUserIds.add(sub.userId);
+    }
+  });
+
+  // Only keep profiles belonging to subscribed users
+  const activeProfiles = profilesData.filter(
+    (profile) => activeUserIds.has(profile.userId)
+  );
+
+  const merged = activeProfiles.map((p) => {
+    const personal = personalData.find(
+      (info) => info.profileId === p.id
+    );
+
+    return {
+      ...p,
+      personal,
     };
+  });
+
+  setProfiles(merged);
+};
 
     load();
   }, []);
