@@ -360,6 +360,8 @@ const showMenu = [
   "/login",
   "/signup",
   "/profiles",
+  '/privacy-policy',
+  '/terms-conditions'
 ].some((path) => pathname === path || pathname.startsWith("/dashboard"));
 
   useEffect(() => {

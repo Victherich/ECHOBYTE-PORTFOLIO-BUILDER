@@ -131,8 +131,8 @@ export default function Footer() {
 
       {/* LINKS */}
       <LinkRow>
-        <FooterLink href="/privacypolicy">Privacy Policy</FooterLink>
-        <FooterLink href="/termsandconditions">Terms</FooterLink>
+        <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
+        <FooterLink href="/terms-conditions">Terms</FooterLink>
         <FooterLink href="/contact">Contact</FooterLink>
       </LinkRow>
 
