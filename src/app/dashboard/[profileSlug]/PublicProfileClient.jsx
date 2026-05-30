@@ -14,7 +14,6 @@ import EducationSections from "@/components/EducationSections";
 import CertificationsSections from "@/components/CertificationsSections";
 import SummarySections from "@/components/SummarySections";
 import LinksSections from "@/components/LinksSections";
-import { useRouter } from "next/navigation";
 
 /* ================= STYLES ================= */
 const Container = styled.div`
@@ -67,8 +66,6 @@ export default function PublicProfileClient({ profileSlug }) {
   const [biography, setBiography] = useState([]);
   const [loading, setLoading] = useState(true);
   const [personalInfo, setPersonalInfo]=useState([]);
-  const [hasSubscription, setHasSubscription] = useState(null);
-   const router = useRouter();
 
   useEffect(() => {
     if (!profileSlug) return;
@@ -116,8 +113,6 @@ export default function PublicProfileClient({ profileSlug }) {
 
         setProfile({ id: profileId, ...profileDoc.data() });
 
-        await checkSubscription(profileDoc.data().userId);
-
         // load all related sections
         await Promise.all([
           fetchCollection("certifications", setCertifications, profileId),
@@ -138,57 +133,11 @@ export default function PublicProfileClient({ profileSlug }) {
       }
     };
 
-    const checkSubscription = async (userId) => {
-  const q = query(
-    collection(db, "subscriptions"),
-    where("userId", "==", userId),
-    where("status", "==", "active")
-  );
-
-  const snapshot = await getDocs(q);
-
-  const hasActive = snapshot.docs.some((doc) => {
-    const data = doc.data();
-    const expiry = new Date(data.subscriptionExpiryDate);
-    return expiry > new Date();
-  });
-
-  setHasSubscription(hasActive);
-};
-
     loadProfile();
   }, [profileSlug]);
 
   if (loading) return <Container>Loading profile...</Container>;
   if (!profile) return <Container>Profile not found</Container>;
-  if (hasSubscription === false) {
-  return (
-    <Container style={{ textAlign: "center", padding: "4rem 1rem" }}>
-      <h2 style={{ marginBottom: "1rem" }}>
-        This user does not have an active subscription
-      </h2>
-
-      <p style={{ marginBottom: "2rem", color: "#666" }}>
-        The portfolio is currently private.
-      </p>
-
-      <button
-        onClick={() => router.push("/")}
-        style={{
-          padding: "12px 20px",
-          border: "none",
-          borderRadius: "10px",
-          background: "#0056b3",
-          color: "white",
-          fontWeight: "700",
-          cursor: "pointer",
-        }}
-      >
-        Start building your own portfolio
-      </button>
-    </Container>
-  );
-}
 
   return (
     <Container>

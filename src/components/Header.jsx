@@ -426,13 +426,22 @@ const showMenu = [
         Contact
       </NavLink>
 
+     {!userData&& <NavLink
+        href="/signup"
+        $active={pathname === "/signup"}
+        onClick={() => setOpen(false)}
+      >
+        Sign Up
+      </NavLink>}
+
       <NavLink
         href="/login"
         $active={pathname === "/login"}
         onClick={() => setOpen(false)}
       >
-        {userData ? `Hi ${userData.name?.split(" ")[0]}` : "SignUp/Login"}
+        {userData ? `Your Dashboard` : "Login"}
       </NavLink>
+
     </Nav>
 
     <Hamburger

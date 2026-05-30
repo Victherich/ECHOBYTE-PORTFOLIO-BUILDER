@@ -2,6 +2,7 @@
 
 import styled from "styled-components";
 import { categories } from "../categories";
+import { useRouter } from "next/navigation";
 
 
 // Theme colors
@@ -109,28 +110,65 @@ const SubText = styled.p`
   color: rgba(0, 0, 0, 0.55);
 `;
 
-const PreviewBtn = styled.button`
-  margin-top: 6px;
-  padding: 6px 12px;
-
-  background: #0056b3;
-  color: white;
-
-  border: none;
-  border-radius: 6px;
-
-  cursor: pointer;
-  font-weight: 600;
-
-  transition: 0.2s ease;
-
-  &:hover {
-    background: #004494;
-    transform: translateY(-1px);
-  }
+const ButtonGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
 `;
 
+// const PreviewBtn = styled.button`
+//   margin-top: 6px;
+//   padding: 6px 12px;
 
+//   background: #0056b3;
+//   color: white;
+
+//   border: none;
+//   border-radius: 6px;
+
+//   cursor: pointer;
+//   font-weight: 600;
+
+//   transition: 0.2s ease;
+
+//   &:hover {
+//     background: #004494;
+//     transform: translateY(-1px);
+//   }
+// `;
+
+const PreviewBtn = styled.button`
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  background: white;
+  color: #0056b3;
+  border: 1px solid #0056b3;
+
+  box-shadow: 0 4px 12px rgba(0, 86, 179, 0.12);
+
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: #0056b3;
+    color: white;
+    box-shadow: 0 8px 18px rgba(0, 86, 179, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;
 const SectionsWrapper = styled.div`
   margin-top: 1rem;
   display: grid;
@@ -241,6 +279,10 @@ export default function ProfileCard({
   setLinksModal,
   setSummaryModal,
 }){
+
+  const router = useRouter();
+const liveLink = `${window.location.origin}/${p.username}${p.profileNumber}`;
+
  return (
   <ProfileItem>
 
@@ -287,13 +329,37 @@ export default function ProfileCard({
               {categories.find((c) => c.id === p.categoryId)?.name || "N/A"}
             </SubText>
 
-            <PreviewBtn
-              onClick={() =>
-                window.open(`/${p.username}${p.profileNumber}`, "_blank")
-              }
-            >
-              Preview Portfolio
-            </PreviewBtn>
+<ButtonGrid>
+  <PreviewBtn onClick={() => router.push(`/dashboard/${p.username}${p.profileNumber}`)}>
+    👁 Preview
+  </PreviewBtn>
+
+  <PreviewBtn onClick={() => window.open(liveLink, "_blank")}>
+    🔗 View Live
+  </PreviewBtn>
+
+  <PreviewBtn
+    onClick={() => navigator.clipboard.writeText(liveLink)}
+  >
+    📋 Copy Live Link
+  </PreviewBtn>
+
+  <PreviewBtn
+    onClick={async () => {
+      if (navigator.share) {
+        await navigator.share({
+          title: "My Portfolio",
+          url: liveLink,
+        });
+      } else {
+        navigator.clipboard.writeText(liveLink);
+      }
+    }}
+  >
+    📤 Share
+  </PreviewBtn>
+</ButtonGrid>
+
           </TextBlock>
 
         </CardLeft>

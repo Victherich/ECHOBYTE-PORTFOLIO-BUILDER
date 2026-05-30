@@ -309,6 +309,7 @@ import styled, { keyframes } from "styled-components";
 import { useRouter } from "next/navigation";
 import IdentityRevolutionSection from "@/components/IdentityRevolutionSection";
 import FeaturesSection from "@/components/FeaturesSection";
+import PricingSection from "@/components/PricingSection";
 
 /* ================= COLORS ================= */
 
@@ -607,7 +608,7 @@ export default function LandingPage() {
           </Card>
         </Grid>
       </Section>
-
+<PricingSection/>
       <FeaturesSection/>
 
       {/* CTA */}

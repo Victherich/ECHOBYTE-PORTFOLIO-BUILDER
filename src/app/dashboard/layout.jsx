@@ -8,6 +8,8 @@ import Link from "next/link";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import { usePathname } from "next/navigation";
+import SubscriptionReminderModal from "@/components/SubscrptionReminderModal";
+import { useAppContext } from "@/components/Context";
 
 
 const DarkBlue = "#0056b3";
@@ -119,12 +121,26 @@ const HomeButton = styled.button`
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-
+const { setShowSubscriptionReminder, showSubscriptionReminder  } = useAppContext();
   const pathname = usePathname();
 const showHomeButton = pathname !== "/dashboard";
 
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+useEffect(() => {
+  setShowSubscriptionReminder(true);
+
+  const interval = setInterval(() => {
+    setShowSubscriptionReminder(false); // reset first
+    setTimeout(() => {
+      setShowSubscriptionReminder(true); // reopen
+    }, 50);
+  }, 3*60*1000);
+
+  return () => clearInterval(interval);
+}, []);
+
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -170,6 +186,9 @@ const showHomeButton = pathname !== "/dashboard";
       setSidebarOpen(false);
     }
   };
+
+
+
 
   return (
     <LayoutWrapper>
@@ -228,6 +247,7 @@ const showHomeButton = pathname !== "/dashboard";
 
       {/* MAIN CONTENT */}
       <Content onClick={closeSidebar}>
+        {showSubscriptionReminder&&<SubscriptionReminderModal/>}
         {children}
       </Content>
     </LayoutWrapper>
