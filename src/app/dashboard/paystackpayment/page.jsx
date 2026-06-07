@@ -19,7 +19,7 @@ const spin = keyframes`
 const Container = styled.div`
   min-height: 100vh;
   background: #f6f9ff;
-  padding: 2rem;
+  // padding: 2rem;
   display: flex;
   justify-content: center;
 `;
@@ -29,7 +29,7 @@ const Card = styled.div`
   max-width: 700px;
   background: #fff;
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1rem;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 `;
 

@@ -235,7 +235,7 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   background: #f6f9ff;
-  padding: 2rem;
+//   padding: 1rem;
 `;
 
 const Card = styled.div`
@@ -243,7 +243,7 @@ const Card = styled.div`
   max-width: 650px;
   background: white;
   border-radius: 18px;
-  padding: 2rem;
+  padding: 1rem;
   box-shadow: 0 10px 30px rgba(0,0,0,.08);
 `;
 

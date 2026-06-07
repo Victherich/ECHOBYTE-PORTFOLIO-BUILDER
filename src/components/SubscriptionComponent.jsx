@@ -57,6 +57,10 @@ const Wrapper = styled.div`
   padding: 2rem;
   border-radius: 16px;
   background: #ffffff;
+
+  @media(max-width:768px){
+  padding:1rem;
+  }
 `;
 
 const Title = styled.h2`
