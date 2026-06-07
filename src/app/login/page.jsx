@@ -232,6 +232,9 @@ const UserLogin = () => {
           <LinkText onClick={() => router.push("/signup")}>
             Don’t have an account? Sign Up
           </LinkText>
+          <LinkText onClick={() => router.push("/forgotpassword")}>
+  Forgot Password?
+</LinkText>
         </form>
       </FormWrapper>
     </Container>

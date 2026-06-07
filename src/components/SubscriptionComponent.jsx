@@ -324,7 +324,7 @@ Subscribe and be Visible.
               <Btn
                 $usd
                 onClick={() =>
-                  (window.location.href = "/pay-usd")
+                  (window.location.href = "/dashboard/paypalpayment")
                 }
               >
                 Click here to Subscribe with $2 (USD) per year

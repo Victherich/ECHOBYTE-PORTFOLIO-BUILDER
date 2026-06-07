@@ -62,6 +62,7 @@ const Label = styled.label`
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  text-align:left;
 `;
 
 const Input = styled.input`
@@ -106,6 +107,61 @@ const LinkText = styled.p`
   }
 `;
 
+
+
+
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: ${DarkBlue};
+`;
+
+const Checkbox = styled.input`
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+`;
+
+const PolicyText = styled.span`
+  a {
+    color: ${DarkBlue};
+    font-weight: 600;
+    text-decoration: underline;
+    font-style:italic;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
+
+const PasswordWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+`;
+
+const EyeButton = styled.button`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-100%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #0056b3;
+  font-weight: 600;
+`;
+
+
+
 // ✨ SIGNUP COMPONENT
 export default function UserSignup() {
   const router = useRouter();
@@ -116,6 +172,9 @@ export default function UserSignup() {
     password: "",
     confirmPassword: "",
   });
+  const [agreed, setAgreed] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -125,6 +184,13 @@ export default function UserSignup() {
     if (form.password !== form.confirmPassword) {
       return Swal.fire("Error", "Passwords do not match", "error");
     }
+    if (!agreed) {
+  return Swal.fire(
+    "Required",
+    "You must agree to the Terms & Privacy Policy to continue",
+    "warning"
+  );
+}
 
     Swal.fire({
       title: "Please wait...",
@@ -178,16 +244,59 @@ export default function UserSignup() {
           <Input name="phone" type="tel" value={form.phone} onChange={handleChange} required />
 
           <Label>Password</Label>
-          <Input name="password" type="password" value={form.password} onChange={handleChange} required />
+          <PasswordWrapper>
+  <Input
+    name="password"
+    type={showPassword ? "text" : "password"}
+    value={form.password}
+    onChange={handleChange}
+    required
+  />
+
+  <EyeButton
+    type="button"
+    onClick={() => setShowPassword((prev) => !prev)}
+  >
+    {showPassword ? "Hide" : "Show"}
+  </EyeButton>
+</PasswordWrapper>
 
           <Label>Confirm Password</Label>
-          <Input
-            name="confirmPassword"
-            type="password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            required
-          />
+          <PasswordWrapper>
+  <Input
+    name="confirmPassword"
+    type={showConfirmPassword ? "text" : "password"}
+    value={form.confirmPassword}
+    onChange={handleChange}
+    required
+  />
+
+  <EyeButton
+    type="button"
+    onClick={() => setShowConfirmPassword((prev) => !prev)}
+  >
+    {showConfirmPassword ? "Hide" : "Show"}
+  </EyeButton>
+</PasswordWrapper>
+
+          <CheckboxWrapper>
+  <Checkbox
+    type="checkbox"
+    checked={agreed}
+    onChange={(e) => setAgreed(e.target.checked)}
+  />
+
+  <PolicyText>
+    I agree to the{" "}
+    <a href="/terms-conditions" target="_blank" rel="noopener noreferrer">
+      Terms & Conditions
+    </a>{" "}
+    and{" "}
+    <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">
+      Privacy Policy
+    </a>
+  </PolicyText>
+</CheckboxWrapper>
 
           <Button type="submit">Create Account</Button>
           <LinkText onClick={() => router.push("/login")}>

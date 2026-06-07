@@ -343,7 +343,7 @@ export default function SubscriptionReminderModal() {
 
   const goUSD = () => {
     close();
-    router.push("/pay-usd");
+    router.push("/dashboard/paypalpayment");
   };
 
   return (

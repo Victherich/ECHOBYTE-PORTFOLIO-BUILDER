@@ -144,12 +144,12 @@ export default function Footer() {
    <FooterText>
   To build your portfolio, visit:{" "}
   <a
-    href="https://portfolio.echobyteconcept.com/"
+    href="https://myportfolio.echobyteconcept.com/"
     target="_blank"
     rel="noopener noreferrer"
     style={{ color: "#2563eb", textDecoration: "underline" }}
   >
-    portfolio.echobyteconcept.com
+    myportfolio.echobyteconcept.com
   </a>
 </FooterText>
 
