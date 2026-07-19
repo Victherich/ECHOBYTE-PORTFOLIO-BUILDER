@@ -144,12 +144,13 @@ export default function Footer() {
    <FooterText>
   To build your portfolio, visit:{" "}
   <a
-    href="https://myportfolio.echobyteconcept.com/"
+    // href="https://myportfolio.echobyteconcept.com/"
+     href="https://myportfolioechobyte.vercel.app/"
     target="_blank"
     rel="noopener noreferrer"
     style={{ color: "#2563eb", textDecoration: "underline" }}
   >
-    myportfolio.echobyteconcept.com
+    myportfolioechobyte.vercel.app
   </a>
 </FooterText>
 
