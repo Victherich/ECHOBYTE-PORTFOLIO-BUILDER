@@ -205,6 +205,8 @@ import { useEffect } from "react";
 import { auth, db } from "../firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import PaymentInProgressModal from "./PaymentInProgressModal";
+import { useAppContext } from "./Context";
 
 /* ================= COLORS ================= */
 
@@ -353,6 +355,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [userData, setUserData] = useState(null);
+   const { paymentSession} = useAppContext();
 
 const showMenu = [
   "/",
@@ -394,6 +397,7 @@ const showMenu = [
       <Overlay $open={open} onClick={() => setOpen(false)} />
 
       <HeaderContainer>
+        {paymentSession&&<PaymentInProgressModal/>}
         <Inner>
           {/* LOGO */}
           <div onClick={() => setOpen(false)}>

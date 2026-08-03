@@ -347,65 +347,66 @@ export default function SubscriptionReminderModal() {
   };
 
   return (
-    <Backdrop onClick={close}>
-      <Modal onClick={(e) => e.stopPropagation()}>
-        {/* ── TOP BANNER ── */}
-        <Banner>
-          {/* <BannerIcon>🚀</BannerIcon> */}
-          <BannerTitle>Go Live with Your Portfolio</BannerTitle>
-          {/* <BannerSub>
-            You&apos;re building something great. Subscribe to publish it to
-            the world and appear on the public directory.
-          </BannerSub> */}
+    // <Backdrop onClick={close}>
+    //   <Modal onClick={(e) => e.stopPropagation()}>
+    //     {/* ── TOP BANNER ── */}
+    //     <Banner>
+    //       {/* <BannerIcon>🚀</BannerIcon> */}
+    //       <BannerTitle>Go Live with Your Portfolio</BannerTitle>
+    //       {/* <BannerSub>
+    //         You&apos;re building something great. Subscribe to publish it to
+    //         the world and appear on the public directory.
+    //       </BannerSub> */}
 
-          {/* floating price badge */}
-          {/* <PriceBadge>
-            <PricePill>₦1,000&nbsp;/&nbsp;yr</PricePill>
-            <Divider>or</Divider>
-            <PricePill $usd>$2&nbsp;/&nbsp;yr</PricePill>
-          </PriceBadge> */}
-        </Banner>
+    //       {/* floating price badge */}
+    //       {/* <PriceBadge>
+    //         <PricePill>₦1,000&nbsp;/&nbsp;yr</PricePill>
+    //         <Divider>or</Divider>
+    //         <PricePill $usd>$2&nbsp;/&nbsp;yr</PricePill>
+    //       </PriceBadge> */}
+    //     </Banner>
 
-        {/* ── BODY ── */}
-        <Body>
-          <FeatureList>
-            <FeatureItem>
-              <FeatureIcon>✓</FeatureIcon>
-              Continue creating and editing your portfolio freely — no limits.
-            </FeatureItem>
-            <FeatureItem>
-              <FeatureIcon>✓</FeatureIcon>
-              Preview your portfolio anytime before publishing.
-            </FeatureItem>
-            <FeatureItem>
-              <FeatureIcon $warn>!</FeatureIcon>
-              Your live link is&nbsp;<strong>not publicly visible</strong>&nbsp;
-              until you subscribe.
-            </FeatureItem>
-            <FeatureItem>
-              <FeatureIcon $warn>!</FeatureIcon>
-              Your profile won&apos;t appear on the public directory without an
-              active subscription.
-            </FeatureItem>
-          </FeatureList>
+    //     {/* ── BODY ── */}
+    //     <Body>
+    //       <FeatureList>
+    //         <FeatureItem>
+    //           <FeatureIcon>✓</FeatureIcon>
+    //           Continue creating and editing your portfolio freely — no limits.
+    //         </FeatureItem>
+    //         <FeatureItem>
+    //           <FeatureIcon>✓</FeatureIcon>
+    //           Preview your portfolio anytime before publishing.
+    //         </FeatureItem>
+    //         <FeatureItem>
+    //           <FeatureIcon $warn>!</FeatureIcon>
+    //           Your live link is&nbsp;<strong>not publicly visible</strong>&nbsp;
+    //           until you subscribe.
+    //         </FeatureItem>
+    //         <FeatureItem>
+    //           <FeatureIcon $warn>!</FeatureIcon>
+    //           Your profile won&apos;t appear on the public directory without an
+    //           active subscription.
+    //         </FeatureItem>
+    //       </FeatureList>
 
-          <ShimmerStrip>
-            ✨ Unlock full visibility for less than a cup of coffee per year
-          </ShimmerStrip>
+    //       <ShimmerStrip>
+    //         ✨ Unlock full visibility for less than a cup of coffee per year
+    //       </ShimmerStrip>
 
-          <BtnStack>
-            <SubBtn $naira onClick={goNaira}>
-              <span>₦</span> Subscribe with ₦1,000&nbsp;/&nbsp;year
-            </SubBtn>
+    //       <BtnStack>
+    //         <SubBtn $naira onClick={goNaira}>
+    //           <span>₦</span> Subscribe with ₦1,000&nbsp;/&nbsp;year
+    //         </SubBtn>
 
-            <SubBtn $usd onClick={goUSD}>
-              <span>$</span> Subscribe with $2 USD&nbsp;/&nbsp;year
-            </SubBtn>
+    //         <SubBtn $usd onClick={goUSD}>
+    //           <span>$</span> Subscribe with $2 USD&nbsp;/&nbsp;year
+    //         </SubBtn>
 
-            <RemindBtn onClick={close}>🔔 Remind me later</RemindBtn>
-          </BtnStack>
-        </Body>
-      </Modal>
-    </Backdrop>
+    //         <RemindBtn onClick={close}>🔔 Remind me later</RemindBtn>
+    //       </BtnStack>
+    //     </Body>
+    //   </Modal>
+    // </Backdrop>
+    null
   );
 }

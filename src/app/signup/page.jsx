@@ -168,6 +168,7 @@ export default function UserSignup() {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    confirmEmail:'',
     phone: "",
     password: "",
     confirmPassword: "",
@@ -180,6 +181,10 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+     if (form.email !== form.confirmEmail) {
+      return Swal.fire("Error", "Emails do not match", "error");
+    }
 
     if (form.password !== form.confirmPassword) {
       return Swal.fire("Error", "Passwords do not match", "error");
@@ -239,6 +244,10 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
           <Label>Email</Label>
           <Input name="email" type="email" value={form.email} onChange={handleChange} required />
+
+           <Label>Confirm Email</Label>
+          <Input name="confirmEmail" type="email" value={form.confirmEmail} onChange={handleChange} required />
+
 
           <Label>Phone Number</Label>
           <Input name="phone" type="tel" value={form.phone} onChange={handleChange} required />

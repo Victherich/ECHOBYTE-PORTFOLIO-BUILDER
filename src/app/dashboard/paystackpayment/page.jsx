@@ -167,28 +167,6 @@ const [redirectCountdown, setRedirectCountdown] = useState(10);
 };
   
 
-/* ===================== POLLING ===================== */
-//   const startPolling = (verificationNumber) => {
-//     setCountdown(120);
-//     setStatus("verifying");
-
-//     const interval = setInterval(async () => {
-//       const res = await fetch(
-//         `/api/verify-subscription?ref=${verificationNumber}`
-//       );
-
-//       const data = await res.json();
-
-//       if (data?.status === "success") {
-//         clearInterval(interval);
-//         setStatus("success");
-//         localStorage.removeItem("subscription_payment");
-
-//         Swal.fire("Success", "Subscription activated!", "success");
-//       }
-//     }, 5000);
-
-
 const startPolling = (verificationNumber) => {
   let attempts = 0;
   const maxAttempts = 18;

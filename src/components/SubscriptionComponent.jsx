@@ -5,13 +5,12 @@
 
 import { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { auth, db } from "@/firebaseConfig";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import Swal from "sweetalert2";
+import PaystackPop from "@paystack/inline-js";
+import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import {auth, db, paymentDb } from "@/firebaseConfig";
+import { useAppContext } from "./Context";
+
 
 /* ========== ANIMATION ========== */
 const glow = keyframes`
@@ -101,24 +100,6 @@ const BtnRow = styled.div`
   gap: 1rem;
   margin-top: 1rem;
 `;
-
-// const Btn = styled.button`
-//   flex: 1;
-//   padding: 12px;
-//   border: none;
-//   border-radius: 10px;
-//   cursor: pointer;
-//   font-weight: 700;
-//   color: white;
-//   transition: 0.3s;
-
-//   background: ${(p) => (p.$usd ? "#1a73e8" : "#0056b3")};
-
-//   &:hover {
-//     transform: translateY(-2px);
-//     opacity: 0.9;
-//   }
-// `;
 
 
 const Btn = styled.button`
@@ -211,6 +192,7 @@ const Loader = styled.div`
 export default function SubscriptionComponent() {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
+ const { priceInNGN, priceInUSD, setPaymentSession, payWithPaystack} = useAppContext();
 
   useEffect(() => {
     const loadSubscription = async () => {
@@ -261,6 +243,110 @@ export default function SubscriptionComponent() {
 
   const hasActiveSubscription = !!subscription;
 
+
+
+//  const payWithPaystack = async () => {
+// const email = auth.currentUser?.email;
+// const name=auth.currentUser?.displayName;
+// const nameParts = name.trim().split(/\s+/);
+//   const firstName = nameParts[0] || "";
+//   const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+
+
+//     // 1. Validation check for required data
+//     if (!email || !priceInNGN.amount || !firstName || !lastName || !priceInNGN.currency) {
+//       Swal.fire({
+//         icon: "warning",
+//         title: "Missing Information",
+//         text: "Please provide your first name, last name, email, currency, and a valid amount before proceeding with the payment.",
+//       });
+//       return;
+//     }
+
+//     // 2. SweetAlert confirmation prompt before starting
+//     const confirmation = await Swal.fire({
+//       title: "Start Payment",
+//       text: `You are about to start the payment process of ${priceInNGN.currency || ""} ${priceInNGN.amount}. Do you wish to start Now?`,
+//       // icon: "question",
+//       showCancelButton: true,
+//       confirmButtonText: "Start Now",
+//       cancelButtonText: "Cancel",
+//     });
+
+//     if (!confirmation.isConfirmed) {
+//       return;
+//     }
+
+//     // 3. Start payment process
+//     setPaymentSession(true);
+//     Swal.fire({ text: "Please wait...", allowOutsideClick: false });
+//     Swal.showLoading();
+
+//     const paystack = new PaystackPop();
+//     const verificationNumber = `${Date.now()}E${Math.floor(Math.random() * 1000000000)}`;
+//     const source = "Echobyte Courses Website"
+//     const purpose = "Purchase of Course"
+
+//     // Prepare placeholder transaction object
+//     const initialTransaction = {
+//       status: "initialized",
+//       amount:priceInNGN.amount,
+//       email,
+//       firstname: firstName || "",
+//       lastname: lastName || "",
+//       createdAt: new Date().toISOString(),
+//       paymentMethod: "Paystack",
+//       currency:priceInNGN.currency,
+//       metadata: {
+//         custom_payment_verification_number: verificationNumber,
+//         source,
+//         purpose
+//       },
+//     };
+
+//     // Save transaction state to localStorage (Verification number lives inside metadata)
+//     localStorage.setItem(
+//       "pendingTransaction",
+//       JSON.stringify({ transaction: initialTransaction })
+//     );
+
+//     // Initialize Paystack transaction popup
+//     paystack.newTransaction({
+//       key: "pk_live_afb3375b9a770a5a332904dcf1a26e77c2a5f170",
+//       // key: "pk_test_60e1f53bba7c80b60029bf611a26a66a9a22d4e4",
+//       amount: priceInNGN.amount * 100,
+//       email,
+//       firstname: firstName || '',
+//       lastname: lastName || "",
+//       metadata: {
+//         custom_payment_verification_number: verificationNumber,
+//           source,
+//         purpose
+//       },
+//       onSuccess: (transaction) => {
+//         Swal.fire({ text: "Payment processing..., Please wait", showConfirmButton: false });
+//         Swal.showLoading();
+
+//         startPaymentPolling1(verificationNumber);
+//       },
+//       onCancel: () => {
+//         Swal.fire({ icon: "error", text: "Payment cancelled." });
+//         setPaymentSession(false);
+//         localStorage.removeItem("pendingTransaction");
+//       },
+//       onError: (error) => {
+//         Swal.fire({ icon: "error", text: `Payment failed: ${error.message}` });
+//         setPaymentSession(false);
+//         localStorage.removeItem("pendingTransaction");
+//       },
+//     });
+//   };
+
+
+
+
+
+
   return (
     <Wrapper>
       <Title>Subscriptions</Title>
@@ -284,7 +370,7 @@ Subscribe and be Visible.
       </Subtitle>
 
       <PriceBox>
-        <Price>₦1000 per year or $2 per year</Price>
+        <Price>{priceInNGN.currency}{priceInNGN.amount} per year or {priceInUSD.currency}{priceInUSD.amount} per year</Price>
 
         <p>
           Full portfolio visibility
@@ -295,7 +381,7 @@ Subscribe and be Visible.
         <Loader>Loading subscription...</Loader>
       ) : (
         <>
-          <Status active={hasActiveSubscription}>
+          <Status active={hasActiveSubscription ? true : undefined}>
             {hasActiveSubscription ? (
               <>
                 ✅ You have an active subscription.
@@ -317,12 +403,13 @@ Subscribe and be Visible.
           {!hasActiveSubscription && (
             <BtnRow>
               <Btn
-                onClick={() =>
-                  (window.location.href =
-                    "/dashboard/paystackpayment")
-                }
+                // onClick={() =>
+                //   (window.location.href =
+                //     "/dashboard/paystackpayment")
+                // }
+                   onClick={payWithPaystack}
               >
-              Click here to Subscribe with ₦1000 per year
+              Click here to Subscribe with {priceInNGN.currency}{priceInNGN.amount} per year
               </Btn>
 
               <Btn
