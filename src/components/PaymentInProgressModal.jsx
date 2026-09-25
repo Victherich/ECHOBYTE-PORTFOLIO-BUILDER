@@ -1,7 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
+'use client'
+
+import React, {useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import styled, { keyframes } from "styled-components";
-import { Context, useAppContext } from "./Context";
+import { useAppContext } from "./Context";
 
 // === Animations ===
 const spin = keyframes`

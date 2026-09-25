@@ -1693,11 +1693,29 @@ key={p.id}
             </h2>
 
             <Label>Profile Title</Label>
-            <Input
+            <div>
+  <div className="flex justify-between items-center mb-1">
+    <Label>Profile Title</Label>
+    <span className="text-xs text-muted-foreground">
+      {title.length}/70 characters
+    </span>
+  </div>
+  <Input
+    value={title}
+    onChange={(e) => {
+      if (e.target.value.length <= 50) {
+        setTitle(e.target.value.toUpperCase());
+      }
+    }}
+    placeholder="Enter profile title"
+    maxLength={70}
+  />
+</div>
+            {/* <Input
               value={title}
               onChange={(e) => setTitle(e.target.value.toUpperCase())}
               placeholder="Enter profile title"
-            />
+            /> */}
 
             <Label>Theme Design</Label>
             <Select value={theme} onChange={(e) => setTheme(e.target.value)}>

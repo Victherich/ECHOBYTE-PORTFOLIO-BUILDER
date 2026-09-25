@@ -296,7 +296,7 @@ const Hero = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 3rem;
+  gap: 1rem;
   flex-wrap: wrap;
 `;
 
@@ -308,7 +308,7 @@ const Left = styled.div`
 const Badge = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -325,10 +325,11 @@ const Badge = styled.div`
 
 const Name = styled.h1`
   margin: 0;
-  font-size: clamp(2.8rem, 5vw, 4.6rem);
+  // font-size: clamp(2.8rem, 1vw, 4.6rem);
+  font-size:1.5rem;
   line-height: 0.95;
   font-weight: 900;
-  letter-spacing: -3px;
+  letter-spacing: 0px;
 
   text-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 `;
@@ -338,13 +339,13 @@ const Name2 = styled.h1`
   font-size: clamp(2rem, 3vw, 4rem);
   line-height: 0.95;
   font-weight: 700;
-  letter-spacing: -3px;
+  letter-spacing: -2px;
 
   text-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 `;
 
 const Nick = styled.p`
-  margin: 1rem 0 0;
+  margin: 0.5rem 0 0;
   font-size: 1.08rem;
   color: rgba(255, 255, 255, 0.9);
 `;
@@ -444,7 +445,7 @@ const Bottom = styled.div`
   position: relative;
   z-index: 2;
 
-  margin-top: 3rem;
+  margin-top: 1rem;
 `;
 
 const Grid = styled.div`
@@ -460,8 +461,8 @@ const Card = styled.div`
 
   border: 1px solid rgba(255, 255, 255, 0.14);
 
-  padding: 1rem;
-  border-radius: 22px;
+  padding: 0.5rem;
+  border-radius: 10px;
 
   transition: all 0.25s ease;
 
@@ -480,7 +481,7 @@ const Label = styled.p`
 `;
 
 const Value = styled.p`
-  margin: 0.55rem 0 0;
+  // margin: 0.55rem 0 0;
   font-size: 1rem;
   font-weight: 600;
 `;
@@ -494,7 +495,7 @@ const Tags = styled.div`
 `;
 
 const Tag = styled.span`
-  padding: 10px 16px;
+  padding: 5px 8px;
   border-radius: 999px;
 
   background: rgba(255, 255, 255, 0.12);
@@ -574,8 +575,8 @@ export default function PersonalDetailsSection1({ data, profile }) {
 
           <Tags>
           
-              <Tag>Hobbies: {data.hobbies}</Tag>
-              <Tag>Traits: {data.personalTraits}</Tag>
+              {data.hobbies&&<Tag>Hobbies: {data.hobbies}</Tag>}
+              {data.personalTraits&&<Tag>Traits: {data.personalTraits}</Tag>}
         
           </Tags>
       
