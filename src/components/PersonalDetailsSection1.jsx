@@ -450,7 +450,7 @@ const Bottom = styled.div`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: 10px;
 `;
 
 const Card = styled.div`
@@ -460,8 +460,8 @@ const Card = styled.div`
 
   border: 1px solid rgba(255, 255, 255, 0.14);
 
-  padding: 0.5rem;
-  border-radius: 10px;
+  padding: 2px 5px;
+  border-radius: 5px;
 
   transition: all 0.25s ease;
 
@@ -490,12 +490,12 @@ const Tags = styled.div`
 
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.5rem;
 `;
 
 const Tag = styled.span`
-  padding: 5px 8px;
-  border-radius: 999px;
+  padding: 1px 8px;
+  border-radius: 5px;
 
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.14);

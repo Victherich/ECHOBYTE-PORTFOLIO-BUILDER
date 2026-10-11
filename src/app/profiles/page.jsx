@@ -136,7 +136,7 @@ const Content = styled.div`
 
 const TitleName = styled.h2`
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 0.7rem;
   color: #111;
   font-weight: 800;
 `;
