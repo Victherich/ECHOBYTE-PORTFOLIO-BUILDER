@@ -91,8 +91,8 @@ const Status = styled.div`
   border-radius: 10px;
   margin-top: 1rem;
   font-weight: 600;
-  background: ${(p) => (p.active ? "#e8fff0" : "#ffe8e8")};
-  color: ${(p) => (p.active ? "green" : "red")};
+  background: ${(p) => (p.$active ? "#e8fff0" : "#ffe8e8")};
+  color: ${(p) => (p.$active ? "green" : "red")};
 `;
 
 const BtnRow = styled.div`
@@ -381,7 +381,7 @@ Subscribe and be Visible.
         <Loader>Loading subscription...</Loader>
       ) : (
         <>
-          <Status active={hasActiveSubscription ? true : undefined}>
+          <Status $active={hasActiveSubscription ? true : undefined}>
             {hasActiveSubscription ? (
               <>
                 ✅ You have an active subscription.

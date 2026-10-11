@@ -19,4 +19,5 @@ export const categories = [
   { id: "18", name: "Nonprofit & Community" },
   { id: "19", name: "Religion & Spirituality" },
   { id: "20", name: "Other" },
+   { id: "21", name: "Digital Tech" },
 ];

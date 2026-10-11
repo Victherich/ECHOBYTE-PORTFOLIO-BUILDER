@@ -899,6 +899,7 @@ import ProjectsModal from "./ProfileSectionsEditing/ProjectsModal";
 import CertificationsModal from "./ProfileSectionsEditing/CertificationsModal";
 import LinksModal from "./ProfileSectionsEditing/LinksModal";
 import SummaryModal from "./ProfileSectionsEditing/SummaryModal";
+import imageCompression from "browser-image-compression";
 
 // Theme colors
 const DarkBlue = "#0056b3";
@@ -1241,53 +1242,131 @@ const handleCoverImage = (e) => {
 
 
 
-const compressImage = (file, maxSizeKB = 100) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+// const compressImage = (file, maxSizeKB = 100) => {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
 
-    reader.onload = (e) => {
-      const img = document.createElement("img");
-      img.src = e.target.result;
+//     reader.onload = (e) => {
+//       const img = document.createElement("img");
+//       img.src = e.target.result;
 
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
+//       img.onload = () => {
+//         const canvas = document.createElement("canvas");
 
-        const MAX_WIDTH = 900;
-        const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+//         const MAX_WIDTH = 900;
+//         const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
 
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
+//         canvas.width = img.width * scale;
+//         canvas.height = img.height * scale;
 
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+//         const ctx = canvas.getContext("2d");
+//         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        let quality = 0.7;
+//         let quality = 0.7;
 
-        const compress = () => {
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) return reject("Compression failed");
+//         const compress = () => {
+//           canvas.toBlob(
+//             (blob) => {
+//               if (!blob) return reject("Compression failed");
 
-              if (blob.size / 1024 <= maxSizeKB || quality <= 0.1) {
-                resolve(blob);
-              } else {
-                quality -= 0.1;
-                compress();
-              }
-            },
-            "image/jpeg",
-            quality
-          );
-        };
+//               if (blob.size / 1024 <= maxSizeKB || quality <= 0.1) {
+//                 resolve(blob);
+//               } else {
+//                 quality -= 0.1;
+//                 compress();
+//               }
+//             },
+//             "image/jpeg",
+//             quality
+//           );
+//         };
 
-        compress();
-      };
-    };
+//         compress();
+//       };
+//     };
 
-    reader.readAsDataURL(file);
-  });
+//     reader.readAsDataURL(file);
+//   });
+// };
+
+
+
+// 🔹 Compression utility function
+
+
+
+// const compressImage = (file, maxSizeKB = 100) => {
+//   return new Promise((resolve, reject) => {
+//     if (!file) return reject(new Error("No file provided"));
+
+//     const reader = new FileReader();
+
+//     reader.onload = (e) => {
+//       const img = document.createElement("img");
+//       img.src = e.target.result;
+
+//       img.onload = () => {
+//         const canvas = document.createElement("canvas");
+//         const MAX_WIDTH = 800;
+//         const scaleSize = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+
+//         canvas.width = img.width * scaleSize;
+//         canvas.height = img.height * scaleSize;
+
+//         const ctx = canvas.getContext("2d");
+//         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+//         let quality = 0.7;
+
+//         const compressLoop = () => {
+//           canvas.toBlob(
+//             (blob) => {
+//               if (!blob) return reject(new Error("Compression failed"));
+
+//               const sizeKB = blob.size / 1024;
+//               if (sizeKB <= maxSizeKB || quality <= 0.1) {
+//                 resolve(blob);
+//               } else {
+//                 quality -= 0.1;
+//                 compressLoop();
+//               }
+//             },
+//             "image/jpeg",
+//             quality
+//           );
+//         };
+
+//         compressLoop();
+//       };
+
+//       img.onerror = () => reject(new Error("Image load failed"));
+//     };
+
+//     reader.onerror = () => reject(new Error("File reading failed"));
+//     reader.readAsDataURL(file);
+//   });
+// };
+
+
+// / 🔹 Clean, mobile-safe compression using browser-image-compression
+const compressImage = async (file, maxSizeKB = 100) => {
+  if (!file) throw new Error("No file provided");
+
+  const options = {
+    maxSizeMB: maxSizeKB / 1024, // Convert KB to MB (e.g., 100KB = ~0.097MB)
+    maxWidthOrHeight: 800,       // Resizes large mobile dimensions safely
+    useWebWorker: true,          // Runs off the main thread to prevent mobile freezing
+    fileType: "image/jpeg",      // Normalizes output format
+  };
+
+  try {
+    const compressedFile = await imageCompression(file, options);
+    return compressedFile;
+  } catch (error) {
+    console.error("Compression failed, falling back to original file:", error);
+    return file; // Fallback if anything goes wrong on low-end devices
+  }
 };
-
 
 
 
@@ -1703,7 +1782,7 @@ key={p.id}
   <Input
     value={title}
     onChange={(e) => {
-      if (e.target.value.length <= 50) {
+      if (e.target.value.length <= 70) {
         setTitle(e.target.value.toUpperCase());
       }
     }}
@@ -1743,7 +1822,7 @@ key={p.id}
 
 
 
-<Label>Profile Image</Label>
+{/* <Label>Profile Image</Label>
 
 <input
   id="profileUpload"
@@ -1753,14 +1832,13 @@ key={p.id}
   style={{ display: "none" }}
 />
 
-{/* always show upload button */}
 <PreviewBtn
   onClick={() => document.getElementById("profileUpload").click()}
 >
   Upload / Change Profile Image
 </PreviewBtn>
 
-{/* preview if exists */}
+
 {profilePreview && (
   <img
     src={profilePreview}
@@ -1789,14 +1867,14 @@ key={p.id}
   style={{ display: "none" }}
 />
 
-{/* always show upload button */}
+
 <PreviewBtn
   onClick={() => document.getElementById("coverUpload").click()}
 >
   Upload / Change Cover Image
 </PreviewBtn>
 
-{/* preview if exists */}
+
 {coverPreview && (
   <img
     src={coverPreview}
@@ -1811,6 +1889,73 @@ key={p.id}
       border: "2px solid #0056b3",
     }}
   />
+)} */}
+
+
+{/* Profile Image Section */}
+<Label>Profile Image</Label>
+<input
+  id="profileUpload"
+  type="file"
+  accept="image/*"
+  onChange={handleProfileImage}
+  style={{ display: "none" }}
+/>
+
+<label htmlFor="profileUpload">
+  <PreviewBtn as="span" style={{ display: "inline-block", cursor: "pointer", textAlign: "center", width: "100%" }}>
+    Upload / Change Profile Image
+  </PreviewBtn>
+</label>
+
+{profilePreview && (
+  <div>
+    <img
+      src={profilePreview}
+      alt="Profile Preview"
+      style={{
+        width: "70px",
+        height: "70px",
+        borderRadius: "50%",
+        objectFit: "cover",
+        marginTop: "10px",
+        border: "2px solid #0056b3",
+      }}
+    />
+  </div>
+)}
+
+{/* Cover Image Section */}
+<Label style={{ marginTop: "1rem" }}>Cover Image</Label>
+<input
+  id="coverUpload"
+  type="file"
+  accept="image/*"
+  onChange={handleCoverImage}
+  style={{ display: "none" }}
+/>
+
+<label htmlFor="coverUpload">
+  <PreviewBtn as="span" style={{ display: "inline-block", cursor: "pointer", textAlign: "center", width: "100%" }}>
+    Upload / Change Cover Image
+  </PreviewBtn>
+</label>
+
+{coverPreview && (
+  <div>
+    <img
+      src={coverPreview}
+      alt="Cover Preview"
+      style={{
+        width: "100%",
+        height: "100px",
+        borderRadius: "10px",
+        objectFit: "cover",
+        marginTop: "10px",
+        border: "2px solid #0056b3",
+      }}
+    />
+  </div>
 )}
 
             <ModalFooter>

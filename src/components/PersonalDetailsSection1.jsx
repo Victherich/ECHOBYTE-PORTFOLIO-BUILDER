@@ -330,7 +330,6 @@ const Name = styled.h1`
   line-height: 0.95;
   font-weight: 900;
   letter-spacing: 0px;
-
   text-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 `;
 
